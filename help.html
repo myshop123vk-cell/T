@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Help & Support | TrustKart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;600;700&display=swap');
+        body { font-family: 'Hind', sans-serif; background: #f8fafc; color: #0f172a; scroll-behavior: smooth; }
+        
+        /* FAQ Dropdown Transition */
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        .faq-item.active .faq-answer {
+            max-height: 200px;
+        }
+        .faq-item.active .faq-icon {
+            transform: rotate(180deg);
+        }
+
+        /* App Update Glowing Animation */
+        @keyframes pulseGlow {
+            0% {
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.5);
+            }
+            70% {
+                box-shadow: 0 0 0 12px rgba(220, 38, 38, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0);
+            }
+        }
+        .glow-button {
+            animation: pulseGlow 2s infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 pb-24 font-sans antialiased text-slate-800">
+
+    <!-- HEADER -->
+    <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 p-4 shadow-sm border-b border-slate-100 flex justify-between items-center">
+        <button onclick="window.history.back()" class="h-9 w-9 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm text-xs">
+            <i class="fa-solid fa-chevron-left"></i>
+        </button>
+        <h1 class="text-xl font-black text-red-600 tracking-tighter bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">TRUSTKART</h1>
+        <div class="w-9"></div> <!-- Alignment spacer -->
+    </header>
+
+    <main class="p-4 max-w-xl mx-auto space-y-4">
+
+        <!-- 🚀 नई ऐप अपडेट ग्लोइंग कार्ड/बटन 🚀 -->
+        <div class="bg-gradient-to-r from-red-600 to-orange-500 p-4 rounded-2xl text-white shadow-md relative overflow-hidden flex items-center justify-between gap-3">
+            <div class="space-y-0.5">
+                <span class="bg-white/20 text-white text-[9px] font-black uppercase tracking-wider px-2 py-0.5 rounded-md backdrop-blur-sm">New Version Available</span>
+                <h3 class="font-black text-sm italic mt-1">ऐप अपडेट उपलब्ध है!</h3>
+                <p class="text-[10px] text-red-100">नए फ़ीचर्स और फ़ास्ट अनुभव के लिए अपडेट करें।</p>
+            </div>
+            <a id="appUpdateLink" href="#" 
+               target="_blank" 
+               rel="noopener noreferrer" 
+               class="glow-button shrink-0 bg-white text-red-600 font-bold text-xs px-3.5 py-2 rounded-xl shadow-lg hover:bg-slate-100 transition flex items-center gap-1.5 uppercase">
+                <i class="fa-solid fa-download text-xs"></i> अपडेट करें
+            </a>
+        </div>
+
+        <!-- हेडर सेक्शन -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 text-center shadow-sm">
+            <div class="h-14 w-14 bg-gradient-to-r from-red-600 to-orange-500 text-white rounded-2xl flex items-center justify-center mx-auto mb-3 text-xl shadow-md">
+                <i class="fa-solid fa-headset"></i>
+            </div>
+            <h2 class="text-lg font-black text-slate-900 italic uppercase">हम आपकी क्या मदद कर सकते हैं?</h2>
+            <p class="text-red-600 font-bold text-xs mt-0.5">TrustKart सहायता केंद्र 🔴</p>
+            <p class="text-slate-500 text-xs mt-2 max-w-sm mx-auto">ऑर्डर, रिफंड या डिलीवरी से जुड़ी किसी भी समस्या का समाधान यहाँ तुरंत पाएं।</p>
+        </div>
+
+        <!-- त्वरित सहायता और सोशल मीडिया लिंक्स (Contact & Social Media) -->
+        <div class="grid grid-cols-2 gap-2.5">
+            <!-- WhatsApp Support -->
+            <a id="waBtn" href="#" target="_blank" class="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-slate-200 transition">
+                <i class="fa-brands fa-whatsapp text-emerald-500 text-xl shrink-0"></i>
+                <div class="text-left">
+                    <span class="text-xs font-bold text-slate-800 block">WhatsApp चैट</span>
+                    <span class="text-[9px] text-slate-400 block">तुरंत मैसेज भेजें</span>
+                </div>
+            </a>
+
+            <!-- Call Support -->
+            <a id="callBtn" href="#" class="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-slate-200 transition">
+                <i class="fa-solid fa-phone-volume text-blue-500 text-lg shrink-0"></i>
+                <div class="text-left">
+                    <span class="text-xs font-bold text-slate-800 block">कॉल सपोर्ट</span>
+                    <span class="text-[9px] text-slate-400 block">सुबह 9 से रात 6 बजे</span>
+                </div>
+            </a>
+
+            <!-- Instagram Option -->
+            <a id="instaBtn" href="#" target="_blank" class="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-slate-200 transition">
+                <i class="fa-brands fa-instagram text-pink-600 text-xl shrink-0"></i>
+                <div class="text-left">
+                    <span class="text-xs font-bold text-slate-800 block">Instagram</span>
+                    <span class="text-[9px] text-slate-400 block">अपडेट्स और ऑफर्स देखें</span>
+                </div>
+            </a>
+
+            <!-- YouTube Option -->
+            <a id="ytBtn" href="#" target="_blank" class="flex items-center gap-3 p-3 bg-white rounded-2xl border border-slate-100 shadow-sm hover:border-slate-200 transition">
+                <i class="fa-brands fa-youtube text-red-600 text-xl shrink-0"></i>
+                <div class="text-left">
+                    <span class="text-xs font-bold text-slate-800 block">YouTube</span>
+                    <span class="text-[9px] text-slate-400 block">वीडियो ट्यूटोरियल गाइड</span>
+                </div>
+            </a>
+        </div>
+
+        <!-- AI चैटबॉट कार्ड -->
+        <a id="chatBotBtn" href="#" target="_blank" class="block bg-white p-3.5 rounded-2xl border border-slate-100 border-l-4 border-l-red-500 shadow-sm hover:bg-slate-50 transition">
+            <div class="flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <i class="fa-solid fa-robot text-red-600 text-lg"></i>
+                    <div>
+                        <span class="text-xs font-bold text-slate-800 block">TrustKart AI Help Assistant</span>
+                        <span class="text-[10px] text-slate-400 block">AI से अपने सवालों का जवाब पाएं</span>
+                    </div>
+                </div>
+                <div class="h-2 w-2 bg-red-500 rounded-full animate-ping"></div>
+            </div>
+        </a>
+
+        <!-- अक्सर पूछे जाने वाले सवाल (FAQs Section) -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+            <h3 class="text-slate-400 font-black text-[10px] uppercase tracking-wider italic flex items-center gap-1.5">
+                <i class="fa-solid fa-circle-question text-xs"></i> अक्सर पूछे जाने वाले सवाल (FAQs)
+            </h3>
+            
+            <div class="space-y-2">
+                <!-- FAQ 1 -->
+                <div class="faq-item bg-slate-50 border border-slate-100 rounded-xl overflow-hidden transition cursor-pointer" onclick="toggleFAQ(this)">
+                    <div class="p-3 flex justify-between items-center gap-2">
+                        <h4 class="text-xs font-bold text-slate-800">1. मेरा ऑर्डर कब तक डिलीवर होगा?</h4>
+                        <i class="fa-solid fa-chevron-down text-slate-400 text-xs faq-icon transition duration-300"></i>
+                    </div>
+                    <div class="faq-answer bg-white border-t border-slate-100">
+                        <p class="p-3 text-[11px] text-slate-600 leading-relaxed">हमारा स्टैंडर्ड डिलीवरी समय 30 से 45 मिनट के बीच है। आप "Track Order" पेज पर जाकर अपने ऑर्डर की स्थिति जांच सकते हैं।</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 2 -->
+                <div class="faq-item bg-slate-50 border border-slate-100 rounded-xl overflow-hidden transition cursor-pointer" onclick="toggleFAQ(this)">
+                    <div class="p-3 flex justify-between items-center gap-2">
+                        <h4 class="text-xs font-bold text-slate-800">2. अगर कोई सामान खराब या क्षतिग्रस्त मिले?</h4>
+                        <i class="fa-solid fa-chevron-down text-slate-400 text-xs faq-icon transition duration-300"></i>
+                    </div>
+                    <div class="faq-answer bg-white border-t border-slate-100">
+                        <p class="p-3 text-[11px] text-slate-600 leading-relaxed">अगर कोई सामान खराब या क्षतिग्रस्त मिलता है, तो डिलीवरी के तुरंत बाद हमें WhatsApp पर फोटो भेजें। हम 100% रिफंड या रिप्लेसमेंट देंगे।</p>
+                    </div>
+                </div>
+
+                <!-- FAQ 3 -->
+                <div class="faq-item bg-slate-50 border border-slate-100 rounded-xl overflow-hidden transition cursor-pointer" onclick="toggleFAQ(this)">
+                    <div class="p-3 flex justify-between items-center gap-2">
+                        <h4 class="text-xs font-bold text-slate-800">3. क्या मैं अपना ऑर्डर कैंसिल कर सकता हूँ?</h4>
+                        <i class="fa-solid fa-chevron-down text-slate-400 text-xs faq-icon transition duration-300"></i>
+                    </div>
+                    <div class="faq-answer bg-white border-t border-slate-100">
+                        <p class="p-3 text-[11px] text-slate-600 leading-relaxed">हाँ, जब तक आपका ऑर्डर स्टोर से पैक होकर नहीं निकलता, आप इसे कैंसिल कर सकते हैं। ऑर्डर शिप होने के बाद कैंसिलेशन संभव नहीं होगा।</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- शॉपिंग के लिए प्रोत्साहित करने वाला सेक्शन -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-100 text-center shadow-sm relative overflow-hidden">
+            <h3 class="text-slate-900 font-bold text-xs">शॉपिंग जारी रखें!</h3>
+            <p class="text-slate-500 text-[11px] mt-1 max-w-xs mx-auto">ताजी सब्जियां, डेयरी और घर के राशन का स्टॉक हमेशा उपलब्ध रहता है। अपनी जरूरत का सामान ऑर्डर करना न भूलें।</p>
+            
+            <a href="index.html" class="mt-3 inline-flex items-center gap-1.5 text-xs font-bold text-white bg-slate-900 hover:bg-slate-800 px-4 py-2 rounded-xl transition shadow-md">
+                <i class="fa-solid fa-chevron-left text-xs"></i> स्टोर पर जाएँ
+            </a>
+        </div>
+
+    </main>
+
+    <!-- BOTTOM NAV -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-[0_-4px_16px_rgba(0,0,0,0.04)] z-50 py-2 px-8 flex justify-between items-center rounded-t-2xl">
+        <a href="index.html" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 transition">
+            <i class="fas fa-home text-lg"></i><span class="text-[10px] font-bold">Home</span>
+        </a>
+        <a href="profile.html" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 transition">
+            <i class="fas fa-user text-lg"></i><span class="text-[10px] font-bold">Profile</span>
+        </a>
+        <a href="track.html" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 transition">
+            <i class="fas fa-route text-lg"></i><span class="text-[10px] font-bold">Track Order</span>
+        </a>
+    </div>
+
+    <!-- Firebase Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCvzZQ98rot6DIlaCN87eO-QsK3zzJHlp0",
+            authDomain: "trustkart-d3d8f.firebaseapp.com",
+            projectId: "trustkart-d3d8f",
+            storageBucket: "trustkart-d3d8f.firebasestorage.app",
+            messagingSenderId: "643370824475",
+            appId: "1:643370824475:web:5c7f3367b61e333bb1d9be"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // डेटाबेस से लिंक्स लोड करने का फंक्शन
+        async function loadSupportSettings() {
+            try {
+                const docRef = doc(db, "settings", "global");
+                const snap = await getDoc(docRef);
+
+                if (snap.exists()) {
+                    const d = snap.data();
+
+                    // 1. App Update Link
+                    if (d.appUrl) {
+                        document.getElementById('appUpdateLink').href = d.appUrl;
+                    }
+
+                    // 2. WhatsApp Link
+                    if (d.wa) {
+                        document.getElementById('waBtn').href = `https://wa.me/${d.wa}?text=Help%20Regarding%20TrustKart%20Order`;
+                    }
+
+                    // 3. Call Link
+                    if (d.wa) { // व्हाट्सएप नंबर को ही कॉल के लिए उपयोग किया जा रहा है
+                        document.getElementById('callBtn').href = `tel:+${d.wa}`;
+                    }
+
+                    // 4. Instagram Link
+                    if (d.insta) {
+                        document.getElementById('instaBtn').href = d.insta;
+                    }
+
+                    // 5. YouTube Link
+                    if (d.yt) {
+                        document.getElementById('ytBtn').href = d.yt;
+                    }
+
+                    // 6. AI Chatbot Link
+                    if (d.chat) {
+                        document.getElementById('chatBotBtn').href = d.chat;
+                    }
+                }
+            } catch (e) {
+                console.error("Error loading settings:", e);
+            }
+        }
+
+        loadSupportSettings();
+    </script>
+
+    <script>
+        function toggleFAQ(element) {
+            const activeItems = document.querySelectorAll('.faq-item.active');
+            activeItems.forEach(item => {
+                if (item !== element) {
+                    item.classList.remove('active');
+                }
+            });
+            element.classList.toggle('active');
+        }
+    </script>
+</body>
+</html>

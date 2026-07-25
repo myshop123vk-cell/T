@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TrustKart | Profile App</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;600;700&display=swap');
+        body { font-family: 'Hind', sans-serif; background: #f8fafc; color: #0f172a; scroll-behavior: smooth; }
+        .glass-card { background: #ffffff; border: 1px solid #f1f5f9; }
+        .app-gradient { background: #dc2626; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body class="bg-slate-50 pb-24 font-sans antialiased text-slate-800">
+
+    <!-- AUTH BOX -->
+    <div id="authBox" class="hidden p-4 pt-10">
+        <div class="bg-white p-6 rounded-2xl border border-slate-100 shadow-sm text-center space-y-4">
+            <h2 id="authTitle" class="text-xl font-black text-slate-900 italic">नमस्ते!</h2>
+            <p id="authDesc" class="text-slate-400 text-[10px] uppercase font-bold tracking-wider">प्रवेश करें या अकाउंट बनाएं</p>
+            <div class="space-y-2.5">
+                <input type="email" id="email" placeholder="ईमेल आईडी" class="w-full p-2.5 bg-slate-50 rounded-xl outline-none border border-slate-200 text-xs text-slate-800">
+                <input type="password" id="pass" placeholder="पासवर्ड" class="w-full p-2.5 bg-slate-50 rounded-xl outline-none border border-slate-200 text-xs text-slate-800">
+            </div>
+            <button id="mainBtn" onclick="handleAuth()" class="w-full bg-red-600 hover:bg-red-700 py-2.5 rounded-xl text-white font-bold text-xs shadow-md uppercase transition">Login</button>
+            <button onclick="toggleAuthMode()" id="toggleBtn" class="text-red-600 font-bold text-xs underline pt-1 block mx-auto">नया अकाउंट बनाएं (Signup)</button>
+        </div>
+    </div>
+
+    <!-- SETUP BOX -->
+    <div id="setupBox" class="hidden p-4 pt-6">
+        <div class="bg-white p-5 rounded-2xl border border-slate-100 shadow-sm space-y-3">
+            <h3 class="text-sm font-black text-center text-slate-900 uppercase tracking-wider">अपनी प्रोफाइल पूरी करें</h3>
+            <div class="space-y-2.5 pt-2">
+                <input type="text" id="sName" placeholder="आपका पूरा नाम" class="w-full p-2.5 bg-slate-50 rounded-xl outline-none border border-slate-200 text-xs text-slate-800">
+                <input type="tel" id="sPhone" placeholder="मोबाइल नंबर" class="w-full p-2.5 bg-slate-50 rounded-xl outline-none border border-slate-200 text-xs text-slate-800">
+                <input type="text" id="sImg" placeholder="फोटो लिंक (ImgBB वाला)" class="w-full p-2.5 bg-slate-50 rounded-xl outline-none border border-slate-200 text-xs text-slate-800">
+                <textarea id="sAddr" placeholder="पूरा पता (गली, मोहल्ला, गाँव)" class="w-full p-2.5 bg-slate-50 rounded-xl outline-none border border-slate-200 text-xs text-slate-800 h-16" rows="2"></textarea>
+            </div>
+            <button onclick="saveProfile()" class="w-full bg-red-600 hover:bg-red-700 py-2.5 rounded-xl text-white font-bold text-xs shadow-md transition">प्रोफाइल सुरक्षित करें</button>
+        </div>
+    </div>
+
+    <!-- DASHBOARD BOX -->
+    <div id="dashboardBox" class="hidden">
+        <!-- HEADER -->
+        <header class="bg-white/90 backdrop-blur-md sticky top-0 z-40 p-4 shadow-sm border-b border-slate-100 flex justify-between items-center">
+            <button onclick="window.history.back()" class="h-9 w-9 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm text-xs"><i class="fa-solid fa-chevron-left"></i></button>
+            <h1 class="text-xl font-black text-red-600 tracking-tighter bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">TrustKart Grocery</h1>
+            <div class="flex items-center gap-2">
+                <button onclick="shareApp()" class="h-9 w-9 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-center text-slate-600 shadow-sm text-xs"><i class="fa-solid fa-share-nodes"></i></button>
+                <button onclick="logout()" class="h-9 w-9 bg-slate-50 rounded-xl border border-slate-200 flex items-center justify-center text-red-500 hover:bg-red-50 transition shadow-sm text-xs" title="Logout"><i class="fa-solid fa-right-from-bracket"></i></button>
+            </div>
+        </header>
+
+        <main class="p-4 space-y-4">
+            <!-- USER CARD -->
+            <div class="bg-white p-5 rounded-2xl border border-slate-100 text-center relative shadow-sm">
+                <img id="dispImg" src="https://via.placeholder.com/150" class="h-24 w-24 rounded-2xl mx-auto border-2 border-red-500/20 shadow-sm object-cover">
+                <h2 id="dispName" class="text-base font-black mt-3 italic text-slate-900">Loading...</h2>
+                <p id="dispPhone" class="text-[10px] font-bold text-red-600 uppercase tracking-widest">Mobile Set</p>
+                <div class="mt-3 p-3 bg-slate-50 rounded-xl text-left border border-slate-100">
+                    <p class="text-[9px] font-bold text-slate-400 uppercase mb-0.5">My Address</p>
+                    <p id="dispAddr" class="text-xs font-medium text-slate-600"></p>
+                </div>
+                <button onclick="openEdit()" class="mt-3 text-[10px] font-bold bg-slate-100 text-slate-700 px-4 py-1.5 rounded-xl border border-slate-200 shadow-sm">Edit Info</button>
+            </div>
+
+            <!-- ACTION CARDS -->
+            <div class="grid grid-cols-2 gap-3">
+                <a href="track.html" class="bg-white p-3.5 rounded-2xl border border-slate-100 flex flex-col items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-truck-fast text-xl text-orange-500"></i>
+                    <span class="text-[10px] font-bold uppercase text-slate-700">Track Orders</span>
+                </a>
+                <a href="#" id="mapLink" target="_blank" class="bg-white p-3.5 rounded-2xl border border-slate-100 flex flex-col items-center gap-1.5 shadow-sm">
+                    <i class="fa-solid fa-location-dot text-xl text-blue-500"></i>
+                    <span class="text-[10px] font-bold uppercase text-slate-700">Our Location</span>
+                </a>
+            </div>
+
+            <!-- EXTRA LINKS -->
+            <div id="extraLinksBox" class="bg-white p-4 rounded-2xl border border-slate-100 space-y-2 shadow-sm">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-wider mb-2 italic">Web Services</h3>
+            </div>
+
+            <!-- SOCIAL LINKS -->
+            <div id="socialLinks" class="flex justify-center gap-6 py-3 bg-white rounded-2xl border border-slate-100 shadow-sm text-xl"></div>
+
+            <!-- MEDIA BOX -->
+            <div class="space-y-2">
+                <h3 class="text-[10px] font-black text-slate-400 uppercase tracking-wider italic">Gallery & Video</h3>
+                <div id="mediaBox" class="grid grid-cols-2 gap-3 pb-6"></div>
+            </div>
+        </main>
+    </div>
+
+    <!-- BOTTOM NAV -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-100 shadow-[0_-4px_16px_rgba(0,0,0,0.04)] z-50 py-2 px-8 flex justify-between items-center rounded-t-2xl">
+        <a href="index.html" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 transition">
+            <i class="fas fa-home text-lg"></i><span class="text-[10px] font-bold">Home</span>
+        </a>
+        <a href="profile.html" class="flex flex-col items-center gap-0.5 text-red-600 transition">
+            <i class="fas fa-user text-lg"></i><span class="text-[10px] font-bold">Profile</span>
+        </a>
+        <a href="track.html" class="flex flex-col items-center gap-0.5 text-slate-400 hover:text-slate-600 transition">
+            <i class="fas fa-route text-lg"></i><span class="text-[10px] font-bold">Track Order</span>
+        </a>
+    </div>
+
+<script type="module">
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+    import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+    import { getFirestore, doc, setDoc, getDoc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+    const firebaseConfig = {
+        apiKey: "AIzaSyCvzZQ98rot6DIlaCN87eO-QsK3zzJHlp0",
+        authDomain: "trustkart-d3d8f.firebaseapp.com",
+        projectId: "trustkart-d3d8f",
+        storageBucket: "trustkart-d3d8f.firebasestorage.app",
+        messagingSenderId: "643370824475",
+        appId: "1:643370824475:web:5c7f3367b61e333bb1d9be"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    // शेयर लिंक के लिए ग्लोबल वेरिएबल
+    let dbShareUrl = "";
+
+    let isLogin = true;
+    window.toggleAuthMode = () => {
+        isLogin = !isLogin;
+        document.getElementById('authTitle').innerText = isLogin ? "नमस्ते!" : "नया अकाउंट";
+        document.getElementById('mainBtn').innerText = isLogin ? "Login" : "Create Account";
+        document.getElementById('toggleBtn').innerText = isLogin ? "नया अकाउंट बनाना है (Signup)" : "लॉगिन करें (Login)";
+    };
+
+    window.handleAuth = () => {
+        const e = document.getElementById('email').value; 
+        const p = document.getElementById('pass').value;
+        if(isLogin) signInWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
+        else createUserWithEmailAndPassword(auth, e, p).catch(err => alert(err.message));
+    };
+
+    window.logout = () => signOut(auth).then(() => location.reload());
+
+    onAuthStateChanged(auth, async (user) => {
+        if(user) {
+            const userSnap = await getDoc(doc(db, "users", user.uid));
+            if(!userSnap.exists()) {
+                showPage('setupBox');
+            } else {
+                showPage('dashboardBox');
+                loadDashboard(user.uid);
+                syncAdminData();
+            }
+        } else {
+            showPage('authBox');
+        }
+    });
+
+    window.saveProfile = async () => {
+        await setDoc(doc(db, "users", auth.currentUser.uid), {
+            name: document.getElementById('sName').value,
+            phone: document.getElementById('sPhone').value,
+            img: document.getElementById('sImg').value,
+            address: document.getElementById('sAddr').value
+        }, { merge: true });
+        location.reload();
+    };
+
+    function showPage(id) {
+        ['authBox', 'setupBox', 'dashboardBox'].forEach(p => document.getElementById(p).classList.add('hidden'));
+        document.getElementById(id).classList.remove('hidden');
+    }
+
+    async function loadDashboard(uid) {
+        const s = await getDoc(doc(db, "users", uid));
+        const d = s.data();
+        document.getElementById('dispName').innerText = d.name || "User";
+        document.getElementById('dispPhone').innerText = d.phone || "No Mobile Set";
+        document.getElementById('dispAddr').innerText = d.address || "No Address Set";
+        document.getElementById('dispImg').src = d.img || "https://via.placeholder.com/150";
+    }
+
+    function syncAdminData() {
+        onSnapshot(doc(db, "settings", "global"), (s) => {
+            if(!s.exists()) return;
+            const d = s.data();
+
+            // डेटाबेस से प्ले स्टोर / शेयर लिंक सेव करें (appUrl, playstore या link फ़ील्ड से)
+            dbShareUrl = d.appUrl || d.playstore || d.shareLink || d.link || "";
+
+            document.getElementById('mapLink').href = d.map;
+            document.getElementById('extraLinksBox').innerHTML = `
+                <a href="${d.blog}" target="_blank" class="flex justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl items-center"><span class="font-bold text-xs text-slate-700">Read Blogs</span><i class="fa-solid fa-newspaper text-red-600 text-xs"></i></a>
+                <a href="${d.about}" target="_blank" class="flex justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl items-center"><span class="font-bold text-xs text-slate-700">About Us</span><i class="fa-solid fa-info-circle text-blue-500 text-xs"></i></a>
+                <a href="${d.chat}" target="_blank" class="flex justify-between p-3 bg-slate-50 border border-slate-100 rounded-xl border-l-4 border-l-red-500 items-center"><span class="font-bold text-xs text-slate-700">AI Help Assistant</span><div class="h-2 w-2 bg-red-500 rounded-full animate-ping"></div></a>
+            `;
+            document.getElementById('socialLinks').innerHTML = `
+                <a href="https://wa.me/${d.wa}" target="_blank" class="text-emerald-500"><i class="fa-brands fa-whatsapp"></i></a>
+                <a href="${d.fb}" target="_blank" class="text-blue-600"><i class="fa-brands fa-facebook"></i></a>
+                <a href="${d.insta}" target="_blank" class="text-pink-600"><i class="fa-brands fa-instagram"></i></a>
+                <a href="https://youtube.com/${d.yt}" target="_blank" class="text-red-600"><i class="fa-brands fa-youtube"></i></a>
+                <a href="mailto:${d.gmail}" target="_blank" class="text-slate-500"><i class="fa-solid fa-envelope"></i></a>
+            `;
+        });
+        onSnapshot(collection(db, "media"), (s) => {
+            const box = document.getElementById('mediaBox'); box.innerHTML = "";
+            s.forEach(m => {
+                const data = m.data();
+                if(data.type === 'image') box.innerHTML += `<img src="${data.url}" class="h-32 w-full object-cover rounded-2xl border border-slate-100 shadow-sm">`;
+                else box.innerHTML += `<iframe src="${data.url}" class="h-32 w-full rounded-2xl border border-slate-100 shadow-sm"></iframe>`;
+            });
+        });
+    }
+
+    window.shareApp = async () => {
+        // अगर डेटाबेस में शेयर लिंक मौजूद है तो वही यूज़ होगा
+        const shareUrl = dbShareUrl || 'https://bitukumari841220-dotcom.github.io/Apk/app-details.html?id=Gb8kZFVMSmZYcL6kco8c';
+        try { 
+            await navigator.share({ title: 'TrustKart', url: shareUrl }); 
+        } catch (e) { 
+            alert("Link: " + shareUrl); 
+        }
+    };
+    
+    window.openEdit = async () => {
+        if (auth.currentUser) {
+            const s = await getDoc(doc(db, "users", auth.currentUser.uid));
+            if (s.exists()) {
+                const d = s.data();
+                document.getElementById('sName').value = d.name || "";
+                document.getElementById('sPhone').value = d.phone || "";
+                document.getElementById('sImg').value = d.img || "";
+                document.getElementById('sAddr').value = d.address || "";
+            }
+        }
+        showPage('setupBox');
+    };
+</script>
+</body>
+</html>
