@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TrustKart | Smart Village Delivery</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Hind:wght@400;600;700&display=swap');
+        body { font-family: 'Hind', sans-serif; background: #f8fafc; }
+        .app-gradient { background: linear-gradient(135deg, #059669 0%, #047857 100%); }
+        .mic-active { animation: pulse 1.2s infinite; background: #dc2626 !important; }
+        @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); } 100% { box-shadow: 0 0 0 15px rgba(220, 38, 38, 0); } }
+        /* Smooth Custom Scrollbar */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #f1f5f9; }
+        ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+    </style>
+
+    <!-- Firebase SDK Setup -->
+    <script type="module">
+      import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+      import { getFirestore, collection, getDocs, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+      const firebaseConfig = {
+        apiKey: "AIzaSyBzdTs2FSyFkpiHoPXZkDFt15kqXVdV7Hk",
+        authDomain: "mictrustkart.firebaseapp.com",
+        projectId: "mictrustkart",
+        storageBucket: "mictrustkart.firebasestorage.app",
+        messagingSenderId: "909908206436",
+        appId: "1:909908206436:web:46109721d6f6f3cf4f1071"
+      };
+
+      const app = initializeApp(firebaseConfig);
+      const db = getFirestore(app);
+
+      window.db = db;
+      window.collection = collection;
+      window.getDocs = getDocs;
+      window.addDoc = addDoc;
+      window.serverTimestamp = serverTimestamp;
+    </script>
+</head>
+<body class="overflow-x-hidden text-gray-800">
+
+<div class="max-w-[450px] mx-auto min-h-screen relative flex flex-col pb-10 bg-slate-50/50 shadow-2xl shadow-slate-300">
+
+    <!-- Premium Header -->
+    <header class="app-gradient p-4 px-5 rounded-b-[2.5rem] shadow-xl sticky top-0 z-40">
+        <div class="flex justify-between items-center">
+            <div class="flex items-center gap-3">
+                <button onclick="history.back()" class="bg-white/20 h-9 w-9 rounded-full flex items-center justify-center text-white border border-white/20 active:scale-90 transition">
+                    <i class="fa-solid fa-arrow-left text-sm"></i>
+                </button>
+                <div class="flex items-center gap-2">
+                    <div class="bg-white p-1 rounded-xl shadow-inner">
+                        <img src="https://base44.app/api/apps/69abb9de713c0513da7900b8/files/mp/public/69abb9de713c0513da7900b8/cad19433a_1000046550.jpg" alt="Logo" class="h-6 w-auto rounded">
+                    </div>
+                    <span class="text-white font-black text-base tracking-wide">TrustKart</span>
+                </div>
+            </div>
+            <button onclick="togglePolicy(true)" class="bg-white/20 h-9 w-9 rounded-full flex items-center justify-center text-white border border-white/20 shadow-md">
+                <i class="fa-solid fa-clock-rotate-left text-sm"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Content Area -->
+    <main class="p-5 space-y-5 flex-1">
+        
+        <!-- Updated Delivery Schedule Status Banner -->
+        <div class="bg-white p-4 rounded-3xl shadow-sm flex items-center justify-between border border-slate-100">
+            <div class="flex items-center gap-3">
+                <div class="h-11 w-11 bg-emerald-50 rounded-xl flex items-center justify-center text-2xl">📦</div>
+                <div>
+                    <p class="text-[10px] font-black text-emerald-600 uppercase tracking-wider">डिलीवरी समय सारणी</p>
+                    <p class="text-xs font-bold text-slate-700 tracking-tight">रोजाना शाम 03:00 बजे से 07:00 बजे तक</p>
+                </div>
+            </div>
+            <div class="bg-amber-400 text-amber-950 text-[10px] font-black px-2.5 py-1 rounded-xl shadow-sm">BOOKING ON</div>
+        </div>
+
+        <!-- Voice & Text Box Area -->
+        <div class="bg-white rounded-[2.5rem] p-6 shadow-md shadow-slate-100 border border-slate-100 space-y-4 relative">
+            <div class="text-center">
+                <p class="text-slate-400 font-bold text-xs mb-3">"नीचे लिस्ट लिखें या बटन दबाकर बोलें..."</p>
+                <button id="micBtn" onclick="startVoice()" class="h-16 w-16 bg-blue-600 text-white rounded-full flex items-center justify-center text-2xl shadow-lg shadow-blue-200 mx-auto active:scale-90 transition">
+                    <i class="fa-solid fa-microphone"></i>
+                </button>
+            </div>
+            
+            <div class="w-full">
+                <textarea id="voiceText" class="w-full p-4 bg-slate-50 rounded-2xl text-slate-800 font-bold border border-slate-200 outline-none focus:border-emerald-500 focus:bg-white transition placeholder-slate-400 text-sm" rows="4" placeholder="यहाँ सामान लिखें (जैसे: 2 किलो आलू, 1 फॉर्च्यून तेल, लक्स साबुन)..."></textarea>
+            </div>
+        </div>
+
+        <!-- Camera Section -->
+        <div class="bg-white rounded-[2.5rem] p-6 shadow-md shadow-slate-100 flex flex-col items-center border border-slate-100">
+            <label class="group cursor-pointer flex flex-col items-center w-full">
+                <div class="h-14 w-14 bg-rose-500 text-white rounded-2xl flex items-center justify-center text-2xl shadow-lg shadow-rose-200 group-active:scale-90 transition">
+                    <i class="fa-solid fa-camera"></i>
+                </div>
+                <input type="file" id="slipFile" accept="image/*" class="hidden" onchange="previewImg(this)">
+                <span class="mt-2 font-bold text-slate-500 text-xs tracking-tight uppercase">कागज की पर्ची का फोटो अपलोड करें</span>
+            </label>
+            <img id="imgPreview" class="hidden mt-4 w-full h-44 object-cover rounded-3xl border-4 border-slate-100 shadow-md">
+        </div>
+
+        <!-- Next Step Button -->
+        <button onclick="openCheckout()" class="app-gradient w-full py-5 rounded-3xl text-white text-lg font-black shadow-xl shadow-emerald-100 active:scale-95 transition flex items-center justify-center gap-3 tracking-wide">
+            डिटेल्स भरें (Next Step) <i class="fa-solid fa-circle-arrow-right text-base"></i>
+        </button>
+    </main>
+
+    <!-- Delivery Rules & Policy Modal -->
+    <div id="policyModal" class="fixed inset-0 bg-slate-900/80 z-[60] hidden items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white w-full rounded-[2.5rem] p-7 relative shadow-2xl border border-slate-100">
+            <button onclick="togglePolicy(false)" class="absolute -top-3 -right-3 bg-rose-500 text-white h-9 w-9 rounded-full shadow-lg font-bold text-lg flex items-center justify-center">&times;</button>
+            <div class="text-center mb-5">
+                <div class="h-14 w-14 bg-emerald-50 rounded-full flex items-center justify-center mx-auto mb-2 text-emerald-600 text-2xl">
+                    <i class="fa-solid fa-truck-ramp-box"></i>
+                </div>
+                <h3 class="text-xl font-black text-slate-800">सामान डिलीवरी नियम 🕒</h3>
+            </div>
+            <div class="space-y-3 text-slate-600 font-bold text-xs">
+                <div class="p-4 bg-emerald-50 rounded-2xl border-l-4 border-emerald-500">
+                    <p class="text-emerald-900 font-black text-sm">🛵 निश्चित डिलीवरी समय</p>
+                    <p class="mt-1 text-emerald-800 leading-relaxed">हमारे यहाँ सभी ऑर्डर्स की डिलीवरी प्रतिदिन **शाम 03:00 बजे से रात 07:00 बजे** के बीच ही की जाती है।</p>
+                </div>
+                <div class="p-4 bg-amber-50 rounded-2xl border-l-4 border-amber-500">
+                    <p class="text-amber-900 font-black text-sm">💡 बुकिंग निर्देश</p>
+                    <p class="mt-1 text-amber-800 leading-relaxed">आप दिन में किसी भी समय ऑर्डर बुक कर सकते हैं, आपका सामान शाम को सुरक्षित आपके घर पहुँचा दिया जाएगा।</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Checkout Drawer -->
+    <div id="checkoutModal" class="fixed inset-0 bg-slate-900/80 z-50 hidden items-end">
+        <div class="bg-white w-full rounded-t-[3.5rem] p-7 space-y-4 max-h-[85vh] overflow-y-auto border-t-4 border-emerald-600">
+            <div class="w-12 h-1.5 bg-slate-200 rounded-full mx-auto mb-1"></div>
+            <h3 class="text-xl font-black text-center text-slate-800 tracking-tight">डिलीवरी का पता भरें</h3>
+            
+            <div class="space-y-3">
+                <input type="text" id="cName" placeholder="आपका पूरा नाम" class="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 font-bold outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white text-sm">
+                <input type="tel" id="cPhone" placeholder="मोबाइल नंबर" class="w-full p-4 bg-slate-50 rounded-2xl border border-slate-100 font-bold outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white text-sm">
+                
+                <div class="space-y-1">
+                    <label class="text-[10px] font-black text-slate-400 uppercase tracking-wider ml-1">अपना गाँव चुनें</label>
+                    <select id="cVillage" onchange="calcCharge()" class="w-full p-4 bg-emerald-50/60 rounded-2xl outline-none border border-emerald-100 font-bold text-emerald-900 text-sm appearance-none">
+                        <option value="">-- लोड हो रहा है... (Loading...) --</option>
+                    </select>
+                </div>
+
+                <div class="flex gap-2">
+                    <input type="text" id="cAddr" placeholder="गली नंबर / मकान या लैंडमार्क" class="flex-1 p-4 bg-slate-50 rounded-2xl border border-slate-100 font-bold outline-none text-sm">
+                    <button id="locBtn" onclick="getLoc()" class="bg-amber-500 text-white w-14 h-14 rounded-2xl shadow-md flex items-center justify-center active:scale-90 transition">
+                        <i class="fa-solid fa-location-dot text-base"></i>
+                    </button>
+                </div>
+
+                <!-- Fixed Price Live Billing Card -->
+                <div id="billCard" class="hidden bg-slate-900 text-white p-5 rounded-[2rem] space-y-1 shadow-xl relative overflow-hidden">
+                    <div class="flex justify-between text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                        <span>Fixed Delivery Charge</span>
+                        <span id="feeBase">₹0</span>
+                    </div>
+                    <div class="flex justify-between items-end border-t border-slate-800 pt-2 mt-2">
+                        <span class="font-black text-xs uppercase text-slate-300">कुल डिलीवरी शुल्क</span>
+                        <span id="feeTotal" class="text-2xl font-black text-amber-400">₹0</span>
+                    </div>
+                    <p class="text-[9px] font-bold text-center text-emerald-400 mt-2 italic uppercase">🛵 सामान आज शाम 3 से 7 बजे के बीच पहुँचेगा</p>
+                </div>
+            </div>
+
+            <button id="finalBtn" onclick="placeOrder()" class="app-gradient w-full py-4 rounded-2xl text-white text-lg font-black shadow-lg shadow-emerald-100 flex items-center justify-center gap-2 active:scale-95 transition">
+                <i class="fa-solid fa-circle-check"></i> आर्डर कम्फर्म करें
+            </button>
+            <button onclick="closeCheckout()" class="w-full text-slate-400 font-bold text-xs uppercase text-center pt-1 block">पीछे जाएं (Go Back)</button>
+        </div>
+    </div>
+
+    <!-- Smooth Success Modal -->
+    <div id="successModal" class="fixed inset-0 bg-slate-900/80 z-[70] hidden items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white w-full rounded-[2.5rem] p-7 text-center border border-slate-100 space-y-4 shadow-2xl transition duration-300">
+            <div class="h-20 w-20 bg-emerald-50 text-emerald-600 rounded-full flex items-center justify-center text-4xl shadow-inner mx-auto">
+                <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <h2 class="text-xl font-black text-slate-800">आर्डर सफलतापूर्वक बुक हुआ! 🎉</h2>
+            <p class="text-xs font-bold text-slate-500 leading-relaxed">आपका आर्डर हमे प्राप्त हो गया है। सामान शाम 3:00 से 7:00 बजे के बीच आपके घर डिलीवर कर दिया जाएगा।</p>
+            <button onclick="closeSuccess()" class="app-gradient text-white w-full py-3 rounded-xl font-black shadow-md active:scale-95 transition text-sm">ठीक है (OK)</button>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const IMGBB_KEY = 'd5de2af8625d09ffb92cc67a2c547250';
+    let mapsLink = "";
+    let rates = {};
+
+    async function loadVillages() {
+        const selectEl = document.getElementById('cVillage');
+        try {
+            const querySnapshot = await window.getDocs(window.collection(window.db, "villages"));
+            selectEl.innerHTML = '<option value="">-- गाँव चुनें (Select Village) --</option>';
+            
+            querySnapshot.forEach((doc) => {
+                const data = doc.data();
+                const vName = doc.id;
+                rates[vName] = data.rate;
+
+                const opt = document.createElement('option');
+                opt.value = vName;
+                opt.innerText = `${vName} (₹${data.rate})`;
+                selectEl.appendChild(opt);
+            });
+        } catch (error) {
+            selectEl.innerHTML = '<option value="">त्रुटि! डेटा लोड नहीं हो सका</option>';
+        }
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        setTimeout(loadVillages, 1000);
+    });
+
+    // Simple fixed calculation without night discounts
+    function calcCharge() {
+        const village = document.getElementById('cVillage').value;
+        const card = document.getElementById('billCard');
+
+        if (!village || !rates[village]) { card.classList.add('hidden'); return; }
+
+        card.classList.remove('hidden');
+        let base = rates[village];
+
+        document.getElementById('feeBase').innerText = `₹${base}`;
+        document.getElementById('feeTotal').innerText = `₹${Math.floor(base)}`;
+    }
+
+    function togglePolicy(s) { document.getElementById('policyModal').style.display = s ? 'flex' : 'none'; }
+    
+    function openCheckout() {
+        if(!document.getElementById('voiceText').value.trim() && !document.getElementById('slipFile').files[0]) {
+            return alert("कृपया सामान की लिस्ट लिखें/बोलें या पर्ची की फोटो अपलोड करें!");
+        }
+        document.getElementById('checkoutModal').classList.remove('hidden');
+        document.getElementById('checkoutModal').classList.add('flex');
+    }
+    
+    function closeCheckout() { 
+        document.getElementById('checkoutModal').classList.remove('flex');
+        document.getElementById('checkoutModal').classList.add('hidden'); 
+    }
+    
+    function closeSuccess() { 
+        document.getElementById('successModal').style.display = 'none';
+        window.location.reload();
+    }
+
+    function startVoice() {
+        const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!Speech) return alert("आपका वर्तमान ब्राउज़र वॉइस इनपुट को सपोर्ट नहीं करता है।");
+        const rec = new Speech();
+        rec.lang = 'hi-IN';
+        document.getElementById('micBtn').classList.add('mic-active');
+        
+        rec.onresult = (e) => {
+            const transcript = e.results[0][0].transcript;
+            const textArea = document.getElementById('voiceText');
+            // यदि पहले से कुछ लिखा है, तो नए बोले गए शब्दों को आगे जोड़ देगा
+            if (textArea.value.trim() !== "") {
+                textArea.value = textArea.value.trim() + ", " + transcript;
+            } else {
+                textArea.value = transcript;
+            }
+        };
+        rec.onend = () => document.getElementById('micBtn').classList.remove('mic-active');
+        rec.start();
+    }
+
+    function previewImg(el) {
+        if (el.files && el.files[0]) {
+            const reader = new FileReader();
+            reader.onload = (e) => {
+                const img = document.getElementById('imgPreview');
+                img.src = e.target.result;
+                img.classList.remove('hidden');
+            };
+            reader.readAsDataURL(el.files[0]);
+        }
+    }
+
+    function getLoc() {
+        const btn = document.getElementById('locBtn');
+        btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i>';
+        navigator.geolocation.getCurrentPosition(
+            (p) => {
+                mapsLink = `https://www.google.com/maps?q=${p.coords.latitude},${p.coords.longitude}`;
+                btn.innerHTML = '<i class="fa-solid fa-check"></i>';
+                btn.className = "bg-emerald-600 text-white w-14 h-14 rounded-2xl flex items-center justify-center shadow-lg";
+            },
+            () => { alert("कृपया सटीक लोकेशन के लिए अपना फोन GPS ऑन करें"); btn.innerHTML = '<i class="fa-solid fa-location-dot"></i>'; }
+        );
+    }
+
+    async function placeOrder() {
+        const n = document.getElementById('cName').value.trim();
+        const p = document.getElementById('cPhone').value.trim();
+        const vlg = document.getElementById('cVillage').value;
+        const a = document.getElementById('cAddr').value.trim();
+        const voice = document.getElementById('voiceText').value.trim();
+        const file = document.getElementById('slipFile').files[0];
+        const btn = document.getElementById('finalBtn');
+
+        if(!n || !p || !vlg || !a) return alert("कृपया डिलीवरी की सभी जानकारी भरें!");
+        btn.disabled = true; btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> डेटाबेस में सुरक्षित किया जा रहा है...';
+
+        let url = "नहीं है";
+        if(file) {
+            const fd = new FormData(); fd.append("image", file);
+            try {
+                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {method:"POST", body:fd});
+                const d = await res.json(); url = d.data.url;
+            } catch(e) {}
+        }
+
+        const finalCh = document.getElementById('feeTotal').innerText;
+
+        const orderData = {
+            customerName: n,
+            phone: p,
+            village: vlg,
+            address: a,
+            liveLocation: mapsLink || "नहीं है",
+            itemsText: voice || "पर्ची देखें",
+            slipImageUrl: url,
+            deliveryCharge: finalCh,
+            status: "पेंडिंग (Pending)",
+            timestamp: window.serverTimestamp()
+        };
+
+        try {
+            await window.addDoc(window.collection(window.db, "orders"), orderData);
+            closeCheckout();
+            document.getElementById('successModal').style.display = 'flex';
+        } catch (e) {
+            alert("डेटाबेस सर्वर कनेक्शन एरर! कृपया दोबारा सबमिट करें।");
+        } finally {
+            btn.disabled = false; btn.innerHTML = '<i class="fa-solid fa-circle-check"></i> आर्डर कम्फर्म करें';
+        }
+    }
+</script>
+</body>
+</html>
