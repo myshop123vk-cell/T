@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="hi">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrustKart - Order Online</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link class="content" rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+
+        .active-cat {
+            background: #dc2626 !important;
+            color: white !important;
+            border-color: #dc2626 !important;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.2);
+        }
+
+        .slider-container {
+            display: flex;
+            transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .slide {
+            min-width: 100%;
+        }
+
+        .modal-animate {
+            animation: slideUp 0.25s cubic-bezier(0, 0, 0.2, 1) forwards;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(100%);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        /* Toast Animation */
+        @keyframes toastSlide {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .toast-animate {
+            animation: toastSlide 0.3s cubic-bezier(0, 0, 0.2, 1) forwards;
+        }
+
+        /* Skeleton Shimmer Effect */
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .skeleton {
+            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 pb-24 font-sans antialiased text-slate-800">
+
+    <!-- HEADER / NAVBAR -->
+    <header id="top" class="bg-white/90 backdrop-blur-md sticky top-0 z-40 p-4 shadow-sm border-b border-slate-100">
+        <div class="flex justify-between items-center mb-3">
+            <div class="flex items-center gap-2">
+                <div class="w-8 h-8 rounded-xl bg-red-600 flex items-center justify-center text-white font-black text-sm shadow-md shadow-red-200">
+                    T
+                </div>
+                <div>
+                    <h1 class="text-xl font-black text-red-600 tracking-tighter bg-gradient-to-r from-red-600 to-orange-500 bg-clip-text text-transparent">TRUSTKART</h1>
+                    <p class="text-[9px] text-slate-400 font-bold tracking-wide flex items-center gap-1">FAST DELIVERY <span class="text-xs">⚡</span></p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <button onclick="window.location.reload()" class="p-2 text-slate-500 hover:text-slate-800 transition">
+                    <i class="fas fa-rotate text-sm"></i>
+                </button>
+                <a href="help.html" class="bg-slate-50 text-slate-600 font-bold px-3 py-2 rounded-xl text-xs flex items-center gap-1 border border-slate-200 shadow-sm">
+                    <i class="far fa-question-circle text-slate-400"></i> Help
+                </a>
+                <button onclick="window.openCart()" class="relative bg-red-600 text-white p-2.5 rounded-xl shadow-md hover:bg-red-700 transition">
+                    <i class="fas fa-shopping-basket text-base"></i>
+                    <span id="cartCount" class="absolute -top-1.5 -right-1.5 bg-yellow-400 text-black text-[10px] font-black px-1.5 py-0.5 rounded-full border-2 border-white min-w-[18px] h-[18px] flex items-center justify-center">0</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- SEARCH BAR & FILTER BUTTON -->
+        <div class="flex gap-2">
+            <div class="relative flex-1">
+                <i class="fas fa-search text-slate-400 absolute left-4 top-1/2 -translate-y-1/2 text-xs"></i>
+                <input type="text" id="search" oninput="window.searchProduct()" placeholder="Search products..." class="w-full bg-slate-100 pl-10 pr-4 py-2.5 rounded-xl outline-none focus:ring-2 focus:ring-red-500/20 focus:bg-white border border-transparent transition text-xs font-medium placeholder-slate-400">
+            </div>
+            <button onclick="document.getElementById('search').focus()" class="bg-white px-3.5 border border-slate-200 rounded-xl text-slate-600 hover:text-red-600 text-xs font-bold transition shadow-sm">
+                <i class="fas fa-sliders-h"></i>
+            </button>
+        </div>
+    </header>
+    <!-- BANNER SLIDER -->
+    <div class="mx-4 my-3 overflow-hidden rounded-2xl bg-orange-50 relative border border-orange-100/50 shadow-sm">
+        <div class="slider-container" id="slider">
+            <div class="slide flex items-center justify-between p-4 min-h-[110px] bg-amber-50">
+                <div class="max-w-[60%]">
+                    <p class="text-[9px] font-black text-amber-600 tracking-wider uppercase">Fresh Harvest</p>
+                    <h2 class="text-base font-black text-slate-800 leading-tight">Fresh Vegetables</h2>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Direct from local farms daily.</p>
+                </div>
+                <img src="https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&q=80&w=300" class="w-[35%] h-20 object-cover rounded-xl shadow-inner" alt="Vegetables">
+            </div>
+            <div class="slide flex items-center justify-between p-4 min-h-[110px] bg-red-50">
+                <div class="max-w-[60%]">
+                    <p class="text-[9px] font-black text-red-600 tracking-wider uppercase">Super Savings</p>
+                    <h2 class="text-base font-black text-slate-800 leading-tight">Weekly Grocery Deal</h2>
+                    <p class="text-[10px] text-slate-400 mt-0.5">Up to 30% off on staples.</p>
+                </div>
+                <img src="https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&q=80&w=300" class="w-[35%] h-20 object-cover rounded-xl shadow-inner" alt="Grocery Deal">
+            </div>
+            <div class="slide flex items-center justify-between p-4 min-h-[110px] bg-emerald-50">
+                <div class="max-w-[60%]">
+                    <p class="text-[9px] font-black text-emerald-600 tracking-wider uppercase">Organic Choice</p>
+                    <h2 class="text-base font-black text-slate-800 leading-tight">Fresh Juicy Fruits</h2>
+                    <p class="text-[10px] text-slate-400 mt-0.5">100% organic & handpicked.</p>
+                </div>
+                <img src="https://images.unsplash.com/photo-1610832958506-ee5633619141?auto=format&fit=crop&q=80&w=300" class="w-[35%] h-20 object-cover rounded-xl shadow-inner" alt="Fruits">
+            </div>
+        </div>
+        <div class="absolute bottom-2 left-1/2 transform -translate-x-1/2 flex gap-1" id="slider-dots"></div>
+    </div>
+
+    <!-- SMART ORDER BANNER -->
+    <div class="mx-4 my-3 p-3 bg-red-50/60 border border-red-100 rounded-2xl flex items-center justify-between shadow-sm">
+        <div class="flex items-center gap-2.5 max-w-[70%]">
+            <span class="text-xl">📝</span>
+            <div>
+                <h3 class="font-bold text-xs text-slate-900">Can't find your item?</h3>
+                <p class="text-[10px] text-slate-400 leading-tight">Upload photo or write your list.</p>
+            </div>
+        </div>
+        <a href="smart.html" class="bg-red-600 text-white font-bold text-[10px] px-3 py-2 rounded-xl flex items-center gap-1 shadow-sm hover:bg-red-700 transition">
+            Smart Order <i class="fas fa-chevron-right text-[8px]"></i>
+        </a>
+    </div>
+
+    <!-- CATEGORIES -->
+    <div id="cat-list" class="flex gap-1.5 px-4 py-2 overflow-x-auto no-scrollbar bg-white border-y border-slate-100 shadow-sm">
+        <button onclick="window.filCat('All', this)" class="cat-btn border border-slate-200 text-xs px-4 py-1.5 rounded-full font-bold active-cat transition-all shrink-0">All</button>
+    </div>
+
+    <!-- PRODUCT GRID HEADER -->
+    <div class="px-4 pt-4 pb-1 flex justify-between items-center">
+        <h2 class="text-sm font-black text-slate-900 uppercase tracking-wider">Popular Items</h2>
+        <button onclick="window.filCat('All', null)" class="text-red-600 font-bold text-xs hover:underline">View All</button>
+    </div>
+
+    <!-- PRODUCT GRID -->
+    <div id="product-grid" class="grid grid-cols-2 gap-3 p-4">
+        <div class="bg-white p-2.5 rounded-2xl border border-slate-100 space-y-2">
+            <div class="w-full h-24 rounded-xl skeleton"></div>
+            <div class="h-3 w-3/4 rounded skeleton"></div>
+            <div class="h-3 w-1/2 rounded skeleton"></div>
+            <div class="h-8 w-full rounded-xl skeleton"></div>
+        </div>
+        <div class="bg-white p-2.5 rounded-2xl border border-slate-100 space-y-2">
+            <div class="w-full h-24 rounded-xl skeleton"></div>
+            <div class="h-3 w-3/4 rounded skeleton"></div>
+            <div class="h-3 w-1/2 rounded skeleton"></div>
+            <div class="h-8 w-full rounded-xl skeleton"></div>
+        </div>
+    </div>
+
+    <!-- LOAD MORE BUTTON -->
+    <div class="px-4 mb-6 text-center" id="loadMoreContainer">
+        <button id="loadMoreBtn" onclick="window.loadMoreProducts()" class="hidden w-full bg-white hover:bg-slate-50 text-slate-700 font-bold py-3 rounded-xl text-xs transition border border-slate-200 shadow-sm flex items-center justify-center gap-2">
+            <span>Load More Products</span>
+            <i class="fas fa-chevron-down text-[10px] text-red-500"></i>
+        </button>
+    </div>
+
+    <!-- TOAST CONTAINER -->
+    <div id="toastContainer" class="fixed bottom-20 left-1/2 -translate-x-1/2 z-50 pointer-events-none flex flex-col items-center gap-2 w-full max-w-xs px-4"></div>
+
+    <!-- BOTTOM FLOATING NAV BAR -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-50 px-6 py-2 flex justify-between items-center max-w-md mx-auto rounded-t-2xl shadow-lg">
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'}); window.closeCart();" class="flex flex-col items-center gap-1 text-red-600 font-bold text-[10px]">
+            <i class="fas fa-home text-base"></i>
+            <span>Home</span>
+        </button>
+        <button onclick="window.openCart()" class="flex flex-col items-center gap-1 text-slate-400 hover:text-red-600 transition font-bold text-[10px]">
+            <i class="fas fa-shopping-bag text-base"></i>
+            <span>Cart</span>
+        </button>
+        <a href="profile.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-red-600 transition font-bold text-[10px]">
+            <i class="far fa-user text-base"></i>
+            <span>Profile</span>
+        </a>
+        <a href="track.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-red-600 transition font-bold text-[10px]">
+            <i class="fas fa-route text-base"></i>
+            <span>Track</span>
+        </a>
+    </div>
+    <!-- PRODUCT DETAILS MODAL -->
+    <div id="productModal" class="fixed inset-0 bg-black/60 z-50 hidden backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[85vh] overflow-y-auto no-scrollbar modal-animate relative">
+            <button onclick="window.closeProductModal()" class="absolute top-4 right-4 bg-slate-100 text-slate-500 w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm hover:bg-slate-200 transition">
+                <i class="fas fa-times"></i>
+            </button>
+            <div id="modalProductContent" class="space-y-3 pt-2"></div>
+        </div>
+    </div>
+
+    <!-- CART & CHECKOUT MODAL -->
+    <div id="cartModal" class="fixed inset-0 bg-black/60 z-50 hidden backdrop-blur-sm flex items-end sm:items-center justify-center p-0 sm:p-4">
+        <div class="bg-white w-full max-w-md rounded-t-3xl sm:rounded-3xl p-5 space-y-4 max-h-[90vh] overflow-y-auto no-scrollbar modal-animate">
+            <div class="flex justify-between items-center border-b pb-3">
+                <h3 class="text-base font-black text-slate-900 uppercase">My Basket</h3>
+                <button onclick="window.closeCart()" class="text-slate-400 hover:text-slate-600 font-bold text-sm p-1">
+                    <i class="fas fa-times text-base"></i>
+                </button>
+            </div>
+
+            <!-- Cart Items List -->
+            <div id="cartItems" class="space-y-2 max-h-48 overflow-y-auto no-scrollbar pr-1"></div>
+
+            <!-- Order Form -->
+            <div class="space-y-2.5 pt-2 border-t">
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Select Delivery Village <span class="text-red-500">*</span></label>
+                    <select id="vSelect" onchange="window.updateCart()" class="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-red-500">
+                        <option value="0">गाँव चुनें...</option>
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-2">
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Full Name <span class="text-red-500">*</span></label>
+                        <input type="text" id="cName" placeholder="Enter Full Name" class="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-red-500">
+                    </div>
+                    <div>
+                        <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Mobile Number <span class="text-red-500">*</span></label>
+                        <input type="tel" id="cPhone" placeholder="10-digit mobile" class="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-red-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-0.5">Full Address <span class="text-red-500">*</span></label>
+                    <textarea id="cAddr" placeholder="House no, Street, Landmark" class="w-full bg-slate-50 border border-slate-200 p-2.5 rounded-xl text-xs font-semibold focus:outline-none focus:border-red-500 h-16 resize-none"></textarea>
+                </div>
+
+                <button onclick="window.getLoc()" type="button" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2 rounded-xl text-xs transition border border-slate-200 flex items-center justify-center gap-2">
+                    <i class="fas fa-location-crosshairs text-red-500"></i>
+                    <span id="locBtnText">Set Delivery Location (GPS)</span>
+                </button>
+
+                <!-- Payment Method Toggle -->
+                <div class="pt-2">
+                    <label class="text-[10px] font-bold text-slate-400 uppercase tracking-wider block mb-1">Payment Method</label>
+                    <div class="flex gap-2 p-1 bg-slate-100 rounded-xl">
+                        <button id="btnCOD" type="button" onclick="window.setPay('COD')" class="flex-1 py-2 text-xs rounded-lg font-bold bg-white shadow border border-red-500 text-black">COD</button>
+                        <button id="btnPaid" type="button" onclick="window.setPay('Paid')" class="flex-1 py-2 text-xs rounded-lg font-bold text-slate-400">Online / UPI</button>
+                    </div>
+                </div>
+
+                <!-- DYNAMIC UPI QR Section -->
+                <div id="qrArea" class="hidden space-y-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-center">
+                    <p class="text-[11px] font-bold text-slate-600">Scan QR Code to Pay Exact Amount</p>
+                    <img id="qrImg" src="" class="w-36 h-36 mx-auto rounded-lg border bg-white p-1.5 shadow-sm" alt="UPI QR Code">
+                    <button type="button" onclick="window.payUPI()" class="w-full bg-emerald-600 text-white font-bold py-2 rounded-xl text-xs hover:bg-emerald-700 transition">
+                        Pay via UPI App
+                    </button>
+                    <div class="text-left pt-1">
+                        <label class="text-[10px] font-bold text-slate-500 block mb-1">Upload Payment Screenshot <span class="text-red-500">*Required for Online</span></label>
+                        <input type="file" id="pSS" accept="image/*" class="w-full text-[10px] text-slate-500 file:mr-2 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-red-50 file:text-red-700">
+                    </div>
+                </div>
+
+                <!-- Bill Details & Extra Charges -->
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 space-y-1.5 text-xs">
+                    <div class="flex justify-between text-slate-500">
+                        <span>Items Total</span>
+                        <span id="itemsSubtotal">₹0</span>
+                    </div>
+                    <div id="deliveryRow" class="flex justify-between text-slate-500">
+                        <span>Delivery Charge</span>
+                        <span id="deliveryDisplay">₹0</span>
+                    </div>
+                    <div id="platformRow" class="flex justify-between text-slate-500 hidden">
+                        <span>Platform Fee</span>
+                        <span id="platformDisplay">₹0</span>
+                    </div>
+                    <div id="pkgRow" class="flex justify-between text-slate-500 hidden">
+                        <span>Packaging Charge</span>
+                        <span id="pkgDisplay">₹0</span>
+                    </div>
+                    <div id="handlingRow" class="flex justify-between text-slate-500 hidden">
+                        <span>Payment Handling Fee</span>
+                        <span id="handlingDisplay">₹0</span>
+                    </div>
+                    <div class="flex justify-between font-black text-slate-900 text-sm border-t pt-1.5">
+                        <span>Final Amount</span>
+                        <span id="fTotal" class="text-emerald-600">₹0</span>
+                    </div>
+                    <div id="freeDelNote" class="hidden text-[10px] text-emerald-600 font-bold bg-emerald-50 border border-emerald-200 px-2 py-1 rounded-lg text-center mt-1"></div>
+                    <div id="minOrderAlert" class="hidden bg-red-100 border border-red-200 text-red-700 px-2.5 py-1.5 rounded-lg text-[10px] font-bold flex items-center gap-1.5 mt-2">
+                        <i class="fas fa-circle-exclamation"></i>
+                        <span>Minimum order value is ₹99 (excluding charges)</span>
+                    </div>
+                </div>
+
+                <button id="orderBtn" onclick="window.placeOrder()" class="w-full bg-red-600 text-white font-black py-3 rounded-xl hover:bg-red-700 transition text-xs tracking-wider uppercase shadow-md shadow-red-200">
+                    ORDER NOW
+                </button>
+            </div>
+        </div>
+    </div>
+    <!-- FIREBASE & SCRIPT LOGIC (PART 1) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, addDoc, doc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const configProd = {
+            apiKey: "AIzaSyAN1Ixoi3GtKNn5fs4_mF_XUzn1ohanmZQ",
+            authDomain: "trustkart-products.firebaseapp.com",
+            projectId: "trustkart-products",
+            storageBucket: "trustkart-products.firebasestorage.app",
+            messagingSenderId: "53667815478",
+            appId: "1:53667815478:web:d3fe796b72c4b86ac93897"
+        };
+
+        const configOrder = {
+            apiKey: "AIzaSyBMzI3cibGBwE0T85LRN8xcgQdG2EWUz0Q",
+            authDomain: "trustkart-order.firebaseapp.com",
+            projectId: "trustkart-order",
+            storageBucket: "trustkart-order.firebasestorage.app",
+            messagingSenderId: "332698197358",
+            appId: "1:332698197358:web:8d14e2b0c850138187b57f"
+        };
+
+        const appProd = initializeApp(configProd, "prodApp");
+        const appOrder = initializeApp(configOrder, "orderApp");
+        const dbProd = getFirestore(appProd);
+        const dbOrder = getFirestore(appOrder);
+
+        const IMGBB_KEY = "d5de2af8625d09ffb92cc67a2c547250";
+        let allP = [], currentFilteredP = [], cart = [], sSet = {}, uLoc = "Not Shared", payM = "COD";
+        let currentSlide = 0;
+        let displayLimit = 30;
+
+        function loadSavedUserData() {
+            const name = localStorage.getItem('tk_name') || '';
+            const phone = localStorage.getItem('tk_phone') || '';
+            const addr = localStorage.getItem('tk_addr') || '';
+            const village = localStorage.getItem('tk_village') || '0';
+
+            if (name) document.getElementById('cName').value = name;
+            if (phone) document.getElementById('cPhone').value = phone;
+            if (addr) document.getElementById('cAddr').value = addr;
+            
+            const vSel = document.getElementById('vSelect');
+            if(vSel && village) {
+                vSel.value = village;
+            }
+        }
+
+        function showToast(msg) {
+            const container = document.getElementById('toastContainer');
+            const toast = document.createElement('div');
+            toast.className = "bg-slate-900/90 text-white text-xs px-4 py-2.5 rounded-full shadow-lg font-bold flex items-center gap-2 backdrop-blur-sm toast-animate pointer-events-auto";
+            toast.innerHTML = `<i class="fas fa-check-circle text-emerald-400"></i> ${msg}`;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 2500);
+        }
+
+        function startSlider() {
+            const slider = document.getElementById('slider');
+            if (!slider) return;
+            const totalSlides = slider.children.length;
+            const dotsContainer = document.getElementById('slider-dots');
+
+            dotsContainer.innerHTML = "";
+            for (let i = 0; i < totalSlides; i++) {
+                dotsContainer.innerHTML += `<div class="w-1 h-1 rounded-full bg-slate-300 transition-all duration-300 ${i===0?'!bg-red-600 !w-2.5':''}"></div>`;
+            }
+
+            setInterval(() => {
+                currentSlide = (currentSlide + 1) % totalSlides;
+                slider.style.transform = `translateX(-${currentSlide * 100}%)`;
+                Array.from(dotsContainer.children).forEach((dot, idx) => {
+                    dot.className = idx === currentSlide 
+                        ? "w-2.5 h-1 rounded-full bg-red-600 transition-all duration-300" 
+                        : "w-1 h-1 rounded-full bg-slate-300 transition-all duration-300";
+                });
+            }, 3500);
+        }
+
+        document.addEventListener("DOMContentLoaded", () => {
+            startSlider();
+            loadSavedUserData();
+        });
+
+        // Store Settings Realtime Listener
+        onSnapshot(doc(dbProd, "settings", "store_config"), (d) => {
+            if (d.exists()) {
+                sSet = d.data();
+                window.updateCart();
+            }
+        });
+
+        onSnapshot(collection(dbProd, "villages"), (snap) => {
+            const vSel = document.getElementById('vSelect');
+            vSel.innerHTML = `<option value="0">गाँव चुनें...</option>`;
+            snap.forEach(d => {
+                let v = d.data();
+                vSel.innerHTML += `<option value="${v.charge}">${v.name}</option>`;
+            });
+            const savedVillage = localStorage.getItem('tk_village');
+            if (savedVillage) vSel.value = savedVillage;
+        });
+
+        onSnapshot(collection(dbProd, "categories"), (snap) => {
+            const cl = document.getElementById('cat-list');
+            cl.innerHTML = `<button onclick="window.filCat('All', this)" class="cat-btn border border-slate-200 text-xs px-4 py-1.5 rounded-full font-bold active-cat transition-all shrink-0">All</button>`;
+            snap.forEach(d => {
+                const name = d.data().name;
+                cl.innerHTML += `<button onclick="window.filCat('${name}', this)" class="cat-btn bg-slate-50 border border-slate-200 px-4 py-1.5 rounded-full font-bold text-xs text-slate-500 transition-all shrink-0">${name}</button>`;
+            });
+        });
+
+        onSnapshot(collection(dbProd, "products"), (snap) => {
+            allP = [];
+            snap.forEach(d => {
+                let pData = d.data();
+                pData.id = d.id;
+                allP.push(pData);
+            });
+
+            allP.sort((a, b) => {
+                const aOut = a.status === 'Out of Stock' || a.stock === 0 || a.stock === '0';
+                const bOut = b.status === 'Out of Stock' || b.stock === 0 || b.stock === '0';
+                return aOut - bOut;
+            });
+
+            displayLimit = 30;
+            showP(allP);
+        });
+        function showP(list) {
+            currentFilteredP = list;
+            const grid = document.getElementById('product-grid');
+            grid.innerHTML = "";
+
+            const visibleProducts = list.slice(0, displayLimit);
+
+            visibleProducts.forEach(p => {
+                const safeName = p.name.replace(/'/g, "\\'");
+                const isOutOfStock = p.status === 'Out of Stock' || p.stock === 0 || p.stock === '0';
+
+                let mrpHtml = "";
+                let discountHtml = "";
+                if (p.mrp && Number(p.mrp) > Number(p.discPrice)) {
+                    mrpHtml = `<span class="text-[10px] text-slate-400 line-through">₹${p.mrp}</span>`;
+                    const discountPercent = Math.round(((p.mrp - p.discPrice) / p.mrp) * 100);
+                    discountHtml = `<span class="absolute top-1 left-1 text-[8px] font-black text-white bg-red-600 px-1.5 py-0.5 rounded-md shadow">${discountPercent}% OFF</span>`;
+                }
+
+                if (isOutOfStock) {
+                    discountHtml = `<span class="absolute top-1 left-1 text-[8px] font-black text-white bg-slate-600 px-1.5 py-0.5 rounded-md shadow">Out of Stock</span>`;
+                }
+
+                grid.innerHTML += `
+                <div class="bg-white p-2.5 rounded-2xl shadow-sm border border-slate-100 flex flex-col justify-between relative ${isOutOfStock ? 'opacity-65' : ''}">
+                    <div class="cursor-pointer" onclick="window.viewProductDetails('${p.id}')">
+                        <div class="relative">
+                            <img src="${p.image}" class="w-full h-24 object-cover rounded-xl mb-2 bg-slate-50">
+                            ${discountHtml}
+                        </div>
+                        <h3 class="font-bold text-xs text-slate-800 line-clamp-2 mb-1">${p.name}</h3>
+                    </div>
+                    <div>
+                        <div class="flex items-center gap-1.5 mb-1 mt-1">
+                            <span class="font-black text-sm text-emerald-600">₹${p.discPrice}</span>
+                            ${mrpHtml}
+                        </div>
+                        ${isOutOfStock ? 
+                            `<button disabled class="w-full bg-slate-100 text-slate-400 border border-slate-200 font-bold py-2 rounded-xl text-xs flex items-center justify-center gap-1 mt-1 cursor-not-allowed">
+                                Out of Stock
+                            </button>` : 
+                            `<button onclick="window.addCart('${safeName}', ${p.discPrice})" class="w-full bg-slate-50 hover:bg-red-50 text-slate-700 hover:text-red-600 border border-slate-200 hover:border-red-200 font-bold py-2 rounded-xl text-xs transition flex items-center justify-center gap-1 mt-1 shadow-sm">
+                                <i class="fas fa-plus text-[9px]"></i> Add
+                            </button>`
+                        }
+                    </div>
+                </div>`;
+            });
+
+            const loadMoreBtn = document.getElementById('loadMoreBtn');
+            if (loadMoreBtn) {
+                if (list.length > displayLimit) {
+                    loadMoreBtn.classList.remove('hidden');
+                } else {
+                    loadMoreBtn.classList.add('hidden');
+                }
+            }
+        }
+
+        window.loadMoreProducts = () => {
+            displayLimit += 30;
+            showP(currentFilteredP);
+        };
+
+        window.viewProductDetails = (id) => {
+            const p = allP.find(item => item.id === id);
+            if (!p) return;
+
+            const safeName = p.name.replace(/'/g, "\\'");
+            const isOutOfStock = p.status === 'Out of Stock' || p.stock === 0 || p.stock === '0';
+
+            let mrpHtml = "";
+            if (p.mrp && Number(p.mrp) > Number(p.discPrice)) {
+                mrpHtml = `<span class="text-[10px] text-slate-400 line-through block">MRP: ₹${p.mrp}</span>`;
+            }
+
+            const description = p.description ? p.description : "No description available.";
+
+            const modalContent = `
+                <img src="${p.image}" class="w-full h-48 object-cover rounded-2xl shadow-inner bg-slate-50">
+                <h3 class="text-base font-black text-slate-900 leading-snug">${p.name}</h3>
+                
+                <div class="flex items-center justify-between gap-4 py-1">
+                    <div>
+                        <span class="text-xl font-black text-emerald-600">₹${p.discPrice}</span>
+                        ${mrpHtml}
+                    </div>
+                    <div class="w-1/2">
+                        ${isOutOfStock ? 
+                            `<button disabled class="w-full bg-slate-200 text-slate-400 font-black py-2.5 rounded-xl cursor-not-allowed text-xs text-center uppercase">
+                                Out of Stock
+                            </button>` : 
+                            `<button onclick="window.addCart('${safeName}', ${p.discPrice}); window.closeProductModal();" class="w-full bg-red-600 text-white font-black py-2.5 rounded-xl hover:bg-red-700 transition text-xs text-center uppercase shadow-md flex items-center justify-center gap-1.5">
+                                <i class="fas fa-shopping-basket text-[10px]"></i> Add to Cart
+                            </button>`
+                        }
+                    </div>
+                </div>
+
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100">
+                    <h4 class="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1">Description</h4>
+                    <p class="text-xs text-slate-600 leading-relaxed whitespace-pre-line">${description}</p>
+                </div>
+            `;
+            document.getElementById('modalProductContent').innerHTML = modalContent;
+            document.getElementById('productModal').classList.remove('hidden');
+        };
+
+        window.closeProductModal = () => {
+            document.getElementById('productModal').classList.add('hidden');
+        };
+
+        window.searchProduct = () => {
+            displayLimit = 30;
+            const t = document.getElementById('search').value.toLowerCase();
+            showP(allP.filter(p => p.name.toLowerCase().includes(t)));
+        };
+
+        window.filCat = (cat, btn) => {
+            displayLimit = 30;
+            document.querySelectorAll('.cat-btn').forEach(b => {
+                b.classList.remove('active-cat');
+                b.classList.add('bg-slate-50', 'text-slate-500');
+            });
+            if (btn) {
+                btn.classList.add('active-cat');
+                btn.classList.remove('bg-slate-50', 'text-slate-500');
+            }
+            showP(cat === 'All' ? allP : allP.filter(p => p.category === cat));
+        };
+
+        window.addCart = (n, p) => {
+            const existingItem = cart.find(item => item.n === n);
+            if (existingItem) {
+                existingItem.q += 1;
+            } else {
+                cart.push({ n, p, q: 1 });
+            }
+            window.updateCart();
+            showToast(`${n} added to basket!`);
+        };
+
+        window.changeQty = (i, change) => {
+            cart[i].q += change;
+            if (cart[i].q <= 0) {
+                cart.splice(i, 1);
+            }
+            window.updateCart();
+            if (!cart.length) window.closeCart();
+        };
+        window.updateCart = () => {
+            const totalQty = cart.reduce((s, item) => s + item.q, 0);
+            document.getElementById('cartCount').innerText = totalQty;
+
+            const list = document.getElementById('cartItems');
+            list.innerHTML = "";
+            cart.forEach((it, i) => {
+                list.innerHTML += `
+                <div class="flex justify-between items-center bg-slate-50 p-2.5 rounded-xl font-bold text-xs border border-slate-100">
+                    <span class="flex-1 pr-2 text-slate-700">${it.n}</span>
+                    <div class="flex items-center gap-2.5 bg-white px-2 py-1 rounded-lg border mr-2 shadow-sm">
+                        <button onclick="window.changeQty(${i}, -1)" class="text-red-500 px-0.5 font-black text-sm">-</button>
+                        <span class="text-slate-800 text-[11px]">${it.q}</span>
+                        <button onclick="window.changeQty(${i}, 1)" class="text-green-500 px-0.5 font-black text-sm">+</button>
+                    </div>
+                    <span class="text-slate-800 text-right min-w-[50px]">₹${it.p * it.q}</span>
+                </div>`;
+            });
+
+            const itemsSubtotal = cart.reduce((s, i) => s + (i.p * i.q), 0);
+            let baseDelivery = Number(document.getElementById('vSelect').value) || 0;
+
+            // Dashboard Config Values with comprehensive key lookup logic
+            const rawFreeLimit = sSet.free_delivery_above ?? 
+                                 sSet.freeDeliveryAbove ?? 
+                                 sSet.free_delivery ?? 
+                                 sSet.freeDelivery ?? 
+                                 sSet.free_delivery_min ?? 
+                                 sSet.freeDeliveryMin ?? 
+                                 sSet.free_delivery_limit ?? 
+                                 sSet.freeDeliveryLimit ?? 
+                                 sSet.min_free_delivery ?? 
+                                 sSet.free_shipping_above;
+
+            const freeDelThreshold = (rawFreeLimit !== undefined && rawFreeLimit !== null && rawFreeLimit !== "") ? Number(rawFreeLimit) : 0;
+            
+            const platformFee = Number(sSet.platform_charge || sSet.platformCharge) || 0;
+            const packagingFee = Number(sSet.packaging_charge || sSet.packagingCharge) || 0;
+            
+            // Payment handling charge ONLY applies for Cash on Delivery (COD)
+            let handlingFee = 0;
+            if (payM === 'COD') {
+                handlingFee = Number(sSet.handling_charge || sSet.handlingCharge) || 0;
+            }
+
+            let deliveryCharge = baseDelivery;
+            const freeDelNote = document.getElementById('freeDelNote');
+
+            // Free Delivery Calculation Logic
+            if (freeDelThreshold > 0 && itemsSubtotal >= freeDelThreshold) {
+                deliveryCharge = 0;
+                freeDelNote.innerText = `🎉 Congratulations! Free Delivery Applied (Order above ₹${freeDelThreshold})`;
+                freeDelNote.classList.remove('hidden');
+            } else if (freeDelThreshold > 0 && itemsSubtotal < freeDelThreshold && cart.length > 0) {
+                const diff = freeDelThreshold - itemsSubtotal;
+                freeDelNote.innerText = `Add ₹${diff} more items to get FREE Delivery!`;
+                freeDelNote.classList.remove('hidden');
+            } else {
+                freeDelNote.classList.add('hidden');
+            }
+
+            // Update UI Rows
+            document.getElementById('platformRow').classList.toggle('hidden', platformFee === 0);
+            document.getElementById('pkgRow').classList.toggle('hidden', packagingFee === 0);
+            document.getElementById('handlingRow').classList.toggle('hidden', handlingFee === 0);
+
+            document.getElementById('platformDisplay').innerText = `₹${platformFee}`;
+            document.getElementById('pkgDisplay').innerText = `₹${packagingFee}`;
+            document.getElementById('handlingDisplay').innerText = `₹${handlingFee}`;
+
+            const finalTotal = itemsSubtotal + deliveryCharge + platformFee + packagingFee + handlingFee;
+
+            document.getElementById('itemsSubtotal').innerText = `₹${itemsSubtotal}`;
+            document.getElementById('deliveryDisplay').innerText = (deliveryCharge === 0 && (baseDelivery > 0 || (freeDelThreshold > 0 && itemsSubtotal >= freeDelThreshold))) ? "FREE" : `₹${deliveryCharge}`;
+            document.getElementById('fTotal').innerText = `₹${finalTotal}`;
+
+            // Minimum Order Check Rule: Minimum ₹99
+            const minAlert = document.getElementById('minOrderAlert');
+            if (itemsSubtotal < 99 && cart.length > 0) {
+                minAlert.classList.remove('hidden');
+            } else {
+                minAlert.classList.add('hidden');
+            }
+
+            // QR Code for Exact Amount
+            if (payM === 'Paid' && sSet.upi && finalTotal > 0) {
+                const upiUrl = `upi://pay?pa=${encodeURIComponent(sSet.upi)}&pn=TrustKart&am=${finalTotal}&cu=INR`;
+                document.getElementById('qrImg').src = `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=${encodeURIComponent(upiUrl)}`;
+            }
+        };
+
+        window.openCart = () => cart.length ? document.getElementById('cartModal').classList.remove('hidden') : alert("Your cart is empty!");
+        window.closeCart = () => document.getElementById('cartModal').classList.add('hidden');
+
+        window.getLoc = () => {
+            const btnText = document.getElementById('locBtnText');
+            if (navigator.geolocation) {
+                btnText.innerText = "Finding location...";
+                navigator.geolocation.getCurrentPosition(p => {
+                    uLoc = `http://maps.google.com/?q=${p.coords.latitude},${p.coords.longitude}`;
+                    btnText.innerText = "✓ Location Set";
+                    alert("Location captured successfully!");
+                }, (err) => {
+                    console.error(err);
+                    alert("GPS access denied.");
+                    btnText.innerText = "Set Delivery Location (GPS)";
+                }, { enableHighAccuracy: true });
+            }
+        };
+
+        window.setPay = (m) => {
+            payM = m;
+            document.getElementById('qrArea').classList.toggle('hidden', m === 'COD');
+            document.getElementById('btnCOD').className = m === 'COD' 
+                ? "flex-1 py-2 text-xs rounded-lg font-bold bg-white shadow border border-red-500 text-black" 
+                : "flex-1 py-2 text-xs rounded-lg font-bold text-slate-400";
+            document.getElementById('btnPaid').className = m === 'Paid' 
+                ? "flex-1 py-2 text-xs rounded-lg font-bold bg-white shadow border border-red-500 text-black" 
+                : "flex-1 py-2 text-xs rounded-lg font-bold text-slate-400";
+            
+            window.updateCart();
+        };
+
+        window.payUPI = () => {
+            const total = document.getElementById('fTotal').innerText.replace('₹', '');
+            if (!sSet.upi) return alert("UPI ID not set by admin!");
+            window.location.href = `upi://pay?pa=${sSet.upi}&pn=TrustKart&am=${total}&cu=INR`;
+        };
+
+        window.placeOrder = async () => {
+            const n = document.getElementById('cName').value.trim(),
+                ph = document.getElementById('cPhone').value.trim(),
+                ad = document.getElementById('cAddr').value.trim(),
+                f = document.getElementById('pSS').files[0];
+            const vSelect = document.getElementById('vSelect');
+            const vName = vSelect.options[vSelect.selectedIndex].text;
+
+            const itemsSubtotal = cart.reduce((s, i) => s + (i.p * i.q), 0);
+
+            if (itemsSubtotal < 99) {
+                return alert("मिनिमम ऑर्डर ₹99 होना चाहिए! कृपया कार्ट में और सामान जोड़ें।");
+            }
+
+            if (!n || !ph || !ad || vName.includes("गाँव")) {
+                return alert("कृपया सभी जानकारी भरें और अपना गाँव चुनें!");
+            }
+            if (payM === 'Paid' && !f) {
+                return alert("कृपया पेमेंट का स्क्रीनशॉट अपलोड करें!");
+            }
+
+            localStorage.setItem('tk_name', n);
+            localStorage.setItem('tk_phone', ph);
+            localStorage.setItem('tk_addr', ad);
+            localStorage.setItem('tk_village', vSelect.value);
+
+            const btn = document.getElementById('orderBtn');
+            btn.innerText = "Processing...";
+            btn.disabled = true;
+
+            let ssUrl = "COD";
+            try {
+                if (payM === 'Paid') {
+                    const fd = new FormData();
+                    fd.append("image", f);
+                    const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_KEY}`, {
+                        method: "POST",
+                        body: fd
+                    });
+                    const d = await res.json();
+                    ssUrl = d.data.url;
+                }
+
+                const orderData = {
+                    name: n,
+                    phone: ph,
+                    address: ad,
+                    village: vName,
+                    total: document.getElementById('fTotal').innerText,
+                    items: cart,
+                    location: uLoc,
+                    pay: payM,
+                    ss: ssUrl,
+                    timestamp: new Date()
+                };
+
+                await addDoc(collection(dbOrder, "orders"), orderData);
+
+                Swal.fire({
+                    title: 'Order Placed Successfully!',
+                    text: 'आपका ऑर्डर सफलतापूर्वक दर्ज कर लिया गया है।',
+                    icon: 'success',
+                    confirmButtonText: 'OK',
+                    confirmButtonColor: '#dc2626'
+                }).then(() => {
+                    location.reload();
+                });
+
+            } catch (e) {
+                alert("Order Error: " + e.message);
+                btn.disabled = false;
+                btn.innerText = "ORDER NOW";
+            }
+        };
+    </script>
+</body>
+
+</html>
