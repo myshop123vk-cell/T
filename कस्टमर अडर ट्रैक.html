@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Track Your Order - TrustKart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen text-slate-800 pb-12">
+
+    <!-- Header / Navbar -->
+    <header class="bg-slate-900 text-white py-4 px-6 shadow-md border-b border-slate-800">
+        <div class="max-w-4xl mx-auto flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <div class="bg-gradient-to-tr from-orange-600 to-amber-500 text-white p-2.5 rounded-xl shadow-md">
+                    <i class="fas fa-truck-fast text-lg"></i>
+                </div>
+                <div>
+                    <h1 class="text-lg font-extrabold tracking-tight">TRUSTKART</h1>
+                    <span class="text-[10px] text-orange-400 font-bold block uppercase tracking-widest">Order Tracking Portal</span>
+                </div>
+            </div>
+            <a href="/" class="text-xs font-bold text-slate-300 hover:text-white transition flex items-center gap-1.5">
+                <i class="fas fa-house"></i> Home
+            </a>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="max-w-3xl mx-auto px-4 mt-8 space-y-6">
+
+        <!-- Search Form Card -->
+        <div class="bg-white p-6 rounded-3xl border border-slate-200/80 shadow-sm space-y-4">
+            <div>
+                <h2 class="text-xl font-extrabold text-slate-900">📦 अपना ऑर्डर ट्रैक करें</h2>
+                <p class="text-xs text-slate-500 font-medium mt-1">सटीक 10 अंकों का मोबाइल नंबर और नाम दर्ज करके ऑर्डर खोजें।</p>
+            </div>
+
+            <form id="trackForm" onsubmit="window.searchOrders(event)" class="space-y-4 pt-2">
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">आपका नाम (Customer Name)</label>
+                        <input type="text" id="custName" required placeholder="उदा. Rahul Kumar" class="w-full border border-slate-200 bg-slate-50/50 p-3 rounded-xl text-xs font-semibold outline-none focus:bg-white focus:ring-2 focus:ring-orange-500">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold text-slate-700 mb-1">मोबाइल नंबर (10 Digit Number)</label>
+                        <input type="tel" id="custPhone" maxlength="10" required placeholder="उदा. 9876543210" class="w-full border border-slate-200 bg-slate-50/50 p-3 rounded-xl text-xs font-semibold outline-none focus:bg-white focus:ring-2 focus:ring-orange-500">
+                    </div>
+                </div>
+
+                <button type="submit" class="w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white py-3.5 rounded-xl font-bold text-xs shadow-lg shadow-orange-500/25 transition active:scale-[0.99] flex items-center justify-center gap-2">
+                    <i class="fas fa-magnifying-glass"></i> Track Order Status
+                </button>
+            </form>
+        </div>
+
+        <!-- Result Section -->
+        <div id="resultsContainer" class="space-y-6"></div>
+
+    </main>
+
+    <!-- Firebase Configuration & Logic -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, getDocs, doc, updateDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const configOrder = {
+            apiKey: "AIzaSyBMzI3cibGBwE0T85LRN8xcgQdG2EWUz0Q",
+            authDomain: "trustkart-order.firebaseapp.com",
+            projectId: "trustkart-order",
+            storageBucket: "trustkart-order.firebaseapp.com",
+            messagingSenderId: "332698197358",
+            appId: "1:332698197358:web:8d14e2b0c850138187b57f"
+        };
+
+        const appOrder = initializeApp(configOrder, "orderAppTrack");
+        const dbOrder = getFirestore(appOrder);
+
+        window.searchOrders = async (e) => {
+            e.preventDefault();
+            const inputName = document.getElementById('custName').value.trim().toLowerCase();
+            let inputPhone = document.getElementById('custPhone').value.trim().replace(/[^0-9]/g, '');
+
+            // 10 Digit Phone Validation
+            if (inputPhone.length < 10) {
+                alert("कृपया 10 अंकों का सही मोबाइल नंबर दर्ज करें।");
+                return;
+            }
+
+            // Slice last 10 digits to handle optional country code (+91)
+            if (inputPhone.length > 10) {
+                inputPhone = inputPhone.slice(-10);
+            }
+
+            const container = document.getElementById('resultsContainer');
+            container.innerHTML = `
+                <div class="bg-white p-8 rounded-3xl text-center text-slate-500 font-medium border border-slate-200 shadow-sm">
+                    <i class="fas fa-spinner fa-spin text-2xl text-orange-500 mb-2 block"></i>
+                    सटीक मोबाइल नंबर से ऑर्डर सर्च किया जा रहा है...
+                </div>`;
+
+            try {
+                const querySnapshot = await getDocs(collection(dbOrder, "orders"));
+                let matchedOrders = [];
+
+                querySnapshot.forEach((docSnap) => {
+                    let o = docSnap.data();
+                    o.id = docSnap.id;
+
+                    let dbName = (o.name || o.customerName || '').toLowerCase().trim();
+                    let dbPhone = (o.phone || '').replace(/[^0-9]/g, '').trim();
+
+                    // Take last 10 digits from database phone number
+                    if (dbPhone.length > 10) {
+                        dbPhone = dbPhone.slice(-10);
+                    }
+
+                    // STRICT EXACT PHONE MATCH (10 Digits Exact Match + Name Check)
+                    const isExactPhoneMatch = (dbPhone === inputPhone);
+                    const isNameMatch = dbName.includes(inputName) || inputName.includes(dbName);
+
+                    if (isExactPhoneMatch && isNameMatch) {
+                        matchedOrders.push(o);
+                    }
+                });
+
+                matchedOrders.sort((a, b) => (b.timestamp?.seconds || 0) - (a.timestamp?.seconds || 0));
+                renderOrders(matchedOrders);
+
+            } catch (error) {
+                console.error("Error fetching orders:", error);
+                container.innerHTML = `<div class="bg-red-50 text-red-600 p-4 rounded-2xl text-xs font-bold border border-red-200 text-center">एरर: डेटा लोड करने में समस्या आई।</div>`;
+            }
+        };
+
+        function renderOrders(orders) {
+            const container = document.getElementById('resultsContainer');
+
+            if (orders.length === 0) {
+                container.innerHTML = `
+                    <div class="bg-white p-8 rounded-3xl text-center border border-slate-200 shadow-sm">
+                        <i class="fas fa-box-open text-4xl text-slate-300 mb-3 block"></i>
+                        <h3 class="font-bold text-slate-800 text-sm">कोई ऑर्डर नहीं मिला</h3>
+                        <p class="text-xs text-slate-400 mt-1">दर्ज किया गया मोबाइल नंबर या नाम मैच नहीं हुआ। कृपया सही नंबर डालें।</p>
+                    </div>`;
+                return;
+            }
+
+            container.innerHTML = "";
+
+            orders.forEach(o => {
+                const currentStatus = o.status || "Pending";
+                const isPending = currentStatus === "Pending";
+                const isCancelled = currentStatus === "Cancelled";
+
+                let orderDateTime = "N/A";
+                if (o.timestamp && typeof o.timestamp.toDate === 'function') {
+                    const dt = o.timestamp.toDate();
+                    orderDateTime = dt.toLocaleDateString('hi-IN') + " | " + dt.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+                }
+
+                let itemsSubtotal = 0;
+                let itemsHtml = "";
+
+                if (o.items && Array.isArray(o.items)) {
+                    o.items.forEach(i => {
+                        const itemCost = (i.p || 0) * (i.q || 1);
+                        itemsSubtotal += itemCost;
+                        itemsHtml += `
+                        <div class="flex justify-between text-xs bg-slate-50 p-2.5 rounded-xl border border-slate-100 mb-1 font-semibold">
+                            <span>📦 ${i.n}</span>
+                            <span class="text-slate-500">${i.q} x ₹${i.p} = <strong class="text-slate-800">₹${itemCost}</strong></span>
+                        </div>`;
+                    });
+                } else if (o.itemsText) {
+                    itemsHtml = `<div class="p-3 bg-slate-50 rounded-xl text-xs border border-slate-100 text-slate-700 whitespace-pre-wrap">${o.itemsText}</div>`;
+                }
+
+                const totalNum = Number(o.total ? String(o.total).replace('₹','') : 0);
+                const calcDelivery = totalNum - itemsSubtotal;
+                const deliveryCharge = calcDelivery > 0 ? calcDelivery : (o.deliveryCharge || 0);
+
+                const steps = ["Pending", "Packed", "Out for Delivery", "Delivered"];
+                let activeIndex = steps.indexOf(currentStatus);
+
+                let statusBadge = isCancelled ? 
+                    `<span class="bg-red-100 text-red-600 font-extrabold px-3 py-1 rounded-xl text-xs border border-red-200">❌ Cancelled</span>` : 
+                    `<span class="bg-orange-100 text-orange-700 font-extrabold px-3 py-1 rounded-xl text-xs border border-orange-200">🚚 ${currentStatus}</span>`;
+
+                container.innerHTML += `
+                <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-5">
+                    <div class="flex flex-wrap justify-between items-start gap-2 border-b border-slate-100 pb-4">
+                        <div>
+                            <p class="text-[10px] text-slate-400 font-extrabold uppercase tracking-widest">Order ID: #${o.id.substring(0, 8)}</p>
+                            <h3 class="font-extrabold text-slate-900 text-base mt-0.5">${o.name || o.customerName}</h3>
+                            <p class="text-[11px] text-slate-500 font-medium"><i class="far fa-clock text-slate-400"></i> ${orderDateTime}</p>
+                        </div>
+                        <div>${statusBadge}</div>
+                    </div>
+
+                    ${!isCancelled ? `
+                    <div class="py-2">
+                        <div class="flex justify-between text-[11px] font-bold text-slate-500 mb-2 px-1">
+                            <span class="${activeIndex >= 0 ? 'text-orange-600' : ''}">Pending</span>
+                            <span class="${activeIndex >= 1 ? 'text-orange-600' : ''}">Packed</span>
+                            <span class="${activeIndex >= 2 ? 'text-orange-600' : ''}">On The Way</span>
+                            <span class="${activeIndex >= 3 ? 'text-emerald-600' : ''}">Delivered</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2.5 rounded-full overflow-hidden flex">
+                            <div class="bg-orange-500 h-full transition-all duration-500" style="width: ${((activeIndex + 1) / 4) * 100}%"></div>
+                        </div>
+                    </div>
+                    ` : ''}
+
+                    <div>
+                        <span class="text-[10px] text-slate-400 font-extrabold uppercase tracking-wider block mb-2">Ordered Items:</span>
+                        ${itemsHtml}
+                    </div>
+
+                    <div class="bg-slate-50 p-4 rounded-2xl border border-slate-100 space-y-2 text-xs">
+                        <div class="flex justify-between text-slate-600"><span>Subtotal:</span> <span>₹${itemsSubtotal}</span></div>
+                        <div class="flex justify-between text-orange-600 font-bold"><span>Delivery Charge:</span> <span>₹${deliveryCharge}</span></div>
+                        <div class="flex justify-between text-slate-900 font-black text-sm pt-2 border-t border-slate-200">
+                            <span>Total Amount:</span> 
+                            <span>₹${o.total ? String(o.total).replace('₹','') : itemsSubtotal + deliveryCharge}</span>
+                        </div>
+                    </div>
+
+                    <div class="text-xs text-slate-600 bg-amber-50/50 p-3 rounded-xl border border-amber-100">
+                        <strong class="text-slate-800">Delivery Address:</strong> ${o.village || ''}, ${o.address || ''}
+                    </div>
+
+                    <div class="pt-2 border-t border-slate-100 flex items-center justify-between gap-3">
+                        ${isPending ? `
+                            <p class="text-[11px] text-slate-500 font-medium">ऑर्डर पेंडिंग है। आप इसे कैंसिल कर सकते हैं।</p>
+                            <button onclick="window.cancelCustomerOrder('${o.id}')" class="bg-red-50 hover:bg-red-600 hover:text-white text-red-600 border border-red-200 px-4 py-2 rounded-xl text-xs font-bold transition active:scale-95 shrink-0">
+                                <i class="fas fa-xmark mr-1"></i> Cancel Order
+                            </button>
+                        ` : isCancelled ? `
+                            <p class="text-[11px] text-red-500 font-bold"><i class="fas fa-circle-info"></i> यह ऑर्डर पहले ही कैंसिल किया जा चुका है।</p>
+                        ` : `
+                            <p class="text-[11px] text-slate-400 font-bold"><i class="fas fa-lock text-slate-300"></i> ऑर्डर प्रोसेस में है (Packed/Shipped), इसलिए कैंसिल नहीं किया जा सकता।</p>
+                        `}
+                    </div>
+                </div>`;
+            });
+        }
+
+        window.cancelCustomerOrder = async (orderId) => {
+            if (confirm("क्या आप वाकई इस ऑर्डर को कैंसिल करना चाहते हैं?")) {
+                try {
+                    await updateDoc(doc(dbOrder, "orders", orderId), { status: "Cancelled" });
+                    alert("आपका ऑर्डर सफलतापूर्वक कैंसिल कर दिया गया है।");
+                    document.getElementById('trackForm').dispatchEvent(new Event('submit'));
+                } catch (err) {
+                    alert("ऑर्डर कैंसिल करने में विफलता: " + err.message);
+                }
+            }
+        };
+    </script>
+</body>
+</html>
