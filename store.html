@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ऑनलाइन दुकान - TrustKart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body class="bg-slate-50 min-h-screen font-sans pb-36">
+
+    <!-- Store Header with Background Image & Rounded Vendor Profile -->
+    <header class="relative text-white overflow-hidden bg-slate-900 border-b border-slate-800 shadow-xl min-h-[240px] flex flex-col justify-between p-4">
+        
+        <!-- Clear Background Store Photo with Darkness Overlay -->
+        <div id="storeBgContainer" class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-50"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/60 to-transparent"></div>
+
+        <!-- Top Navigation Bar (Back Button + Share Button) -->
+        <div class="relative z-20 w-full max-w-4xl mx-auto flex justify-between items-center mb-2">
+            <button onclick="goBack()" class="bg-black/40 hover:bg-black/60 backdrop-blur-md text-white px-3.5 py-1.5 rounded-full text-xs font-bold border border-white/20 flex items-center gap-2 transition shadow-lg">
+                <i class="fas fa-arrow-left"></i> <span>वापस जाएं (Back)</span>
+            </button>
+
+            <!-- Share Store Button -->
+            <button onclick="shareStore()" class="bg-amber-500 hover:bg-amber-600 backdrop-blur-md text-slate-900 px-3.5 py-1.5 rounded-full text-xs font-bold border border-amber-300/40 flex items-center gap-2 transition shadow-lg">
+                <i class="fas fa-share-alt text-slate-900"></i> <span>शेयर करें (Share)</span>
+            </button>
+        </div>
+
+        <!-- Header Main Content -->
+        <div class="relative max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-6 z-10 w-full mb-2">
+            <!-- Circular Vendor Image -->
+            <div class="relative shrink-0">
+                <img id="vendorPhoto" src="https://via.placeholder.com/120" class="w-24 h-24 md:w-28 md:h-28 rounded-full object-cover border-4 border-amber-400 shadow-2xl">
+            </div>
+            
+            <div class="text-center md:text-left flex-1 space-y-1">
+                <!-- Vendor Name & Golden Tick Badge -->
+                <div class="flex items-center justify-center md:justify-start gap-2">
+                    <h2 id="vendorName" class="text-base font-bold text-amber-400">दुकानदार का नाम</h2>
+                    <span id="storeBadge"></span>
+                </div>
+
+                <!-- Store Name -->
+                <h1 id="storeName" class="text-2xl md:text-3xl font-black text-white drop-shadow">दुकान का नाम</h1>
+                <p id="storeCategory" class="text-orange-300 text-xs font-bold uppercase tracking-wider">कैटेगरी</p>
+                
+                <!-- Address & Info Details -->
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs text-gray-200 pt-2">
+                    <span id="storeAddress" class="flex items-center gap-1"><i class="fas fa-map-marker-alt text-amber-400"></i> पता लोड हो रहा है...</span>
+                    <span id="storePhone" class="flex items-center gap-1"><i class="fas fa-phone text-amber-400"></i> --</span>
+                    <span id="deliveryTime" class="flex items-center gap-1"><i class="fas fa-clock text-amber-400"></i> --</span>
+                    <span id="storeMap" class="flex items-center gap-1"></span>
+                </div>
+
+                <!-- Social Links -->
+                <div id="socialLinks" class="flex justify-center md:justify-start gap-4 text-xl pt-2"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Block Notice Container (अगर एडमिन ने ब्लॉक किया हो) -->
+    <div id="blockedBanner" class="hidden max-w-4xl mx-auto my-4 p-4 bg-red-100 border border-red-400 text-red-700 text-center font-bold rounded-xl shadow">
+        🚫 यह दुकान वर्तमान में एडमिन द्वारा ब्लॉक या बंद कर दी गई है। इस समय ऑर्डर नहीं लिए जा रहे हैं।
+    </div>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto p-4 space-y-6">
+
+        <!-- Active Festival Banner / Offer Section -->
+        <div id="offerBannerContainer" class="hidden bg-gradient-to-r from-orange-500 to-amber-500 text-white p-5 rounded-2xl shadow-lg border border-orange-400 relative overflow-hidden">
+            <div class="flex flex-col md:flex-row gap-4 items-center">
+                <img id="offerImage" src="" class="w-full md:w-32 h-32 rounded-xl object-cover hidden">
+                <div class="space-y-2 flex-1 text-center md:text-left">
+                    <span class="bg-white/20 text-white text-[10px] font-black uppercase px-2.5 py-1 rounded-full border border-white/30">🔥 विशेष ऑफ़र</span>
+                    <h3 id="offerTitle" class="text-xl font-black">ऑफ़र का शीर्षक</h3>
+                    <p id="offerDesc" class="text-xs text-orange-100">ऑफ़र का विवरण...</p>
+                    <div class="text-xs font-mono font-bold bg-black/20 px-3 py-1.5 rounded-lg inline-block border border-white/10">
+                        ⏰ ऑफर समाप्त होने में समय: <span id="offerTimer" class="text-yellow-300">00:00:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ORDER PRODUCTS INPUT SECTION (सामान की सूची लिखकर या बोलकर) -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+            <div class="flex justify-between items-center">
+                <label class="block text-xs font-bold text-gray-700">1. सामान की सूची दर्ज करें (लिखें या बोलें):</label>
+                <!-- Voice Input Button -->
+                <button type="button" onclick="startVoiceRecognition()" id="micBtn" class="bg-amber-100 hover:bg-amber-200 text-amber-800 px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-2 border border-amber-300 transition">
+                    <i class="fas fa-microphone text-red-500 text-sm"></i> <span id="micStatus">बोलकर लिखें</span>
+                </button>
+            </div>
+            
+            <textarea id="orderItemsText" rows="4" placeholder="यहाँ सामान का नाम और मात्रा लिखें... (उदा. 1 किलो चीनी, 2 पैकेट दूध, 1 साबुन)" class="w-full p-3.5 border rounded-xl outline-none text-sm text-gray-800 bg-gray-50 focus:ring-2 focus:ring-amber-400"></textarea>
+            <p class="text-[11px] text-gray-400">💡 टीप: आप माइक बटन दबाकर बोल भी सकते हैं, आपकी आवाज यहाँ टाइप हो जाएगी।</p>
+        </div>
+
+        <!-- CUSTOMER DELIVERY DETAILS SECTION (ग्राहक की डिलीवरी जानकारी) -->
+        <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-4">
+            <h3 class="text-sm font-bold text-gray-800 border-b pb-2 flex items-center gap-2">
+                <i class="fas fa-truck text-amber-500"></i> 2. डिलीवरी की जानकारी भरें:
+            </h3>
+
+            <!-- Village Selection -->
+            <div>
+                <label class="block text-xs font-bold text-gray-600 mb-1">गाँव चुनें *</label>
+                <select id="villageSelect" onchange="updateDeliveryCharge()" class="w-full p-3 border rounded-xl outline-none font-bold text-gray-800 bg-gray-50 focus:ring-2 focus:ring-amber-400 text-sm">
+                    <option value="0">गाँव चुनें (Select Village)</option>
+                </select>
+            </div>
+
+            <!-- Customer Name & Phone -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">आपका नाम (Customer Name) *</label>
+                    <input type="text" id="custName" placeholder="अपना पूरा नाम लिखें" class="w-full p-3 border rounded-xl outline-none text-sm text-gray-800 bg-gray-50 focus:ring-2 focus:ring-amber-400">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-gray-600 mb-1">मोबाइल नंबर (Mobile Number) *</label>
+                    <input type="tel" id="custPhone" placeholder="10 अंकों का मोबाइल नंबर" maxlength="10" class="w-full p-3 border rounded-xl outline-none text-sm text-gray-800 bg-gray-50 focus:ring-2 focus:ring-amber-400">
+                </div>
+            </div>
+
+            <!-- Detailed Address / Landmark -->
+            <div>
+                <label class="block text-xs font-bold text-gray-600 mb-1">पूरा पता व लैंडमार्क (Address & Landmark) *</label>
+                <textarea id="custAddress" rows="2" placeholder="मकान नं., गली/मोहल्ला, पास का लैंडमार्क (उदा. मंदिर के पास)" class="w-full p-3 border rounded-xl outline-none text-sm text-gray-800 bg-gray-50 focus:ring-2 focus:ring-amber-400"></textarea>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FIXED BOTTOM ORDER BAR -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-slate-200 p-4 shadow-2xl z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center gap-4">
+            <div>
+                <p class="text-xs text-gray-500 font-bold">डिलीवरी शुल्क: <span id="displayCharge" class="text-amber-600 font-extrabold">₹0</span></p>
+                <p class="text-base md:text-lg font-black text-gray-800">WhatsApp ऑर्डर</p>
+            </div>
+            <button id="mainOrderBtn" onclick="sendOrderWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white px-6 py-3.5 rounded-xl font-bold transition shadow-lg flex items-center gap-2 text-sm md:text-base">
+                <i class="fab fa-whatsapp text-xl"></i> ऑर्डर भेजें
+            </button>
+        </div>
+    </div>
+    <!-- FIREBASE AND SCRIPT LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, collection } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDwmv2NuqGv7Fnft7tWS4-hlIVxNh8rz1Q",
+            authDomain: "digital-7c1c5.firebaseapp.com",
+            projectId: "digital-7c1c5",
+            storageBucket: "digital-7c1c5.firebasestorage.app",
+            messagingSenderId: "297384739211",
+            appId: "1:297384739211:web:4f2fe08c9f65bb7bea2f8e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        // URL से Vendor ID निकालें
+        const urlParams = new URLSearchParams(window.location.search);
+        const vendorId = urlParams.get('id');
+
+        let storeData = {};
+        let selectedVillageCharge = 0;
+        let offerTimerInterval = null;
+
+        // Dynamic Back Button Action (पिछला पेज खोलने के लिए)
+        window.goBack = () => {
+            if (document.referrer) {
+                window.history.back();
+            } else {
+                window.location.href = "index.html";
+            }
+        };
+
+        // 🔗 SHARE STORE FUNCTIONALITY (दुकान का लिंक शेयर करने के लिए)
+        window.shareStore = async () => {
+            const currentUrl = window.location.href;
+            const title = storeData.storeName || "ऑनलाइन दुकान - TrustKart";
+            const text = `ऑनलाइन ऑर्डर करने के लिए ${title} की दुकान पर आएं:`;
+
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: title,
+                        text: text,
+                        url: currentUrl
+                    });
+                } catch (err) {
+                    console.log("Share canceled or failed", err);
+                }
+            } else {
+                try {
+                    await navigator.clipboard.writeText(currentUrl);
+                    alert("दुकान का लिंक कॉपी हो गया है! अब आप इसे व्हाट्सएप या किसी भी ऐप पर शेयर कर सकते हैं।");
+                } catch (err) {
+                    alert("लिंक कॉपी करने में असमर्थ। कृपया URL बार से लिंक कॉपी करें।");
+                }
+            }
+        };
+
+        if (vendorId) {
+            loadStoreDetails(vendorId);
+            loadStoreConfig(vendorId);
+            loadVillages(vendorId);
+            loadOffer(vendorId);
+        } else {
+            alert("दुकान का ID नहीं मिला!");
+        }
+
+        // 1. दुकान की जानकारी और ब्लॉक स्टेटस चेकिंग
+        function loadStoreDetails(uid) {
+            onSnapshot(doc(db, "vendors", uid), (snap) => {
+                if (snap.exists()) {
+                    storeData = snap.data();
+
+                    // 🚫 यदि एडमिन द्वारा दुकानदार ब्लॉक है
+                    if (storeData.isBlocked === true || storeData.status === "blocked") {
+                        document.getElementById('blockedBanner').classList.remove('hidden');
+                        const orderBtn = document.getElementById('mainOrderBtn');
+                        orderBtn.disabled = true;
+                        orderBtn.className = "bg-gray-400 text-white px-6 py-3.5 rounded-xl font-bold cursor-not-allowed text-sm md:text-base";
+                        orderBtn.innerHTML = `<i class="fas fa-ban text-xl"></i> दुकान बंद है`;
+                    } else {
+                        document.getElementById('blockedBanner').classList.add('hidden');
+                        const orderBtn = document.getElementById('mainOrderBtn');
+                        orderBtn.disabled = false;
+                        orderBtn.className = "bg-green-600 hover:bg-green-700 text-white px-6 py-3.5 rounded-xl font-bold transition shadow-lg flex items-center gap-2 text-sm md:text-base";
+                        orderBtn.innerHTML = `<i class="fab fa-whatsapp text-xl"></i> ऑर्डर भेजें`;
+                    }
+
+                    document.getElementById('vendorName').innerText = storeData.ownerName || storeData.vendorName || "दुकानदार";
+                    document.getElementById('storeName').innerText = storeData.storeName || "दुकान का नाम";
+                    document.getElementById('storeCategory').innerText = storeData.category || "";
+                    document.getElementById('storePhone').innerText = storeData.phoneNumber || "--";
+                    document.getElementById('storeAddress').innerHTML = `<i class="fas fa-map-marker-alt text-amber-400"></i> ${storeData.address || 'पता उपलब्ध नहीं'}`;
+
+                    if (storeData.vendorPhoto || storeData.storePhoto) {
+                        document.getElementById('vendorPhoto').src = storeData.vendorPhoto || storeData.storePhoto;
+                    }
+
+                    if (storeData.storePhoto) {
+                        const bgDiv = document.getElementById('storeBgContainer');
+                        bgDiv.style.backgroundImage = `url('${storeData.storePhoto}')`;
+                    }
+
+                    if (storeData.mapLink) {
+                        document.getElementById('storeMap').innerHTML = `<a href="${storeData.mapLink}" target="_blank" class="text-amber-400 hover:underline"><i class="fas fa-directions"></i> मैप देखें</a>`;
+                    }
+
+                    // Golden Check Badge (सुनहरा टिक निशान)
+                    const badgeElem = document.getElementById('storeBadge');
+                    if (storeData.isPremium) {
+                        badgeElem.innerHTML = `<i class="fas fa-check-circle text-amber-400 text-lg shadow-sm" title="Verified Store"></i>`;
+                    } else {
+                        badgeElem.innerHTML = "";
+                    }
+
+                    let socialsHtml = "";
+                    if (storeData.facebookLink) socialsHtml += `<a href="${storeData.facebookLink}" target="_blank" class="text-blue-500 hover:text-blue-400"><i class="fab fa-facebook"></i></a>`;
+                    if (storeData.instagramLink) socialsHtml += `<a href="${storeData.instagramLink}" target="_blank" class="text-pink-500 hover:text-pink-400"><i class="fab fa-instagram"></i></a>`;
+                    document.getElementById('socialLinks').innerHTML = socialsHtml;
+                }
+            });
+        }
+
+        // 2. डिलीवरी समय व WhatsApp सेटिंग्स
+        function loadStoreConfig(uid) {
+            onSnapshot(doc(db, "vendors", uid, "config", "settings"), (snap) => {
+                if (snap.exists()) {
+                    const cfg = snap.data();
+                    storeData.whatsapp = cfg.whatsapp;
+                    document.getElementById('deliveryTime').innerHTML = `<i class="fas fa-clock text-amber-400"></i> ${cfg.deliveryTime || '30-45 min'}`;
+                }
+            });
+        }
+
+        // 3. गांवों की सूची
+        function loadVillages(uid) {
+            onSnapshot(collection(db, "vendors", uid, "villages"), (snap) => {
+                const select = document.getElementById('villageSelect');
+                select.innerHTML = `<option value="0">गाँव चुनें (Select Village)</option>`;
+                snap.forEach(d => {
+                    const v = d.data();
+                    select.innerHTML += `<option value="${v.charge}">${v.name} (₹${v.charge} डिलीवरी शुल्क)</option>`;
+                });
+            });
+        }
+
+        window.updateDeliveryCharge = () => {
+            const select = document.getElementById('villageSelect');
+            selectedVillageCharge = Number(select.value);
+            document.getElementById('displayCharge').innerText = `₹${selectedVillageCharge}`;
+        };
+
+        // 4. फेस्टिवल ऑफर और टाइमर
+        function loadOffer(uid) {
+            onSnapshot(doc(db, "vendors", uid, "config", "offer"), (snap) => {
+                if (snap.exists()) {
+                    const offer = snap.data();
+                    const now = new Date().getTime();
+                    const expTime = new Date(offer.expiry).getTime();
+
+                    if (offer.expiry && expTime > now) {
+                        document.getElementById('offerBannerContainer').classList.remove('hidden');
+                        document.getElementById('offerTitle').innerText = offer.title || "";
+                        document.getElementById('offerDesc').innerText = offer.desc || "";
+
+                        if (offer.image) {
+                            const imgElem = document.getElementById('offerImage');
+                            imgElem.src = offer.image;
+                            imgElem.classList.remove('hidden');
+                        }
+
+                        if (offerTimerInterval) clearInterval(offerTimerInterval);
+                        offerTimerInterval = setInterval(() => {
+                            const currentTime = new Date().getTime();
+                            const distance = expTime - currentTime;
+
+                            if (distance < 0) {
+                                clearInterval(offerTimerInterval);
+                                document.getElementById('offerBannerContainer').classList.add('hidden');
+                                return;
+                            }
+
+                            const hours = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const minutes = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                            const seconds = Math.floor((distance % (1000 * 60)) / 1000);
+
+                            document.getElementById('offerTimer').innerText = 
+                                `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+                        }, 1000);
+                    } else {
+                        document.getElementById('offerBannerContainer').classList.add('hidden');
+                    }
+                } else {
+                    document.getElementById('offerBannerContainer').classList.add('hidden');
+                }
+            });
+        }
+
+        // 🎤 VOICE RECOGNITION (बोलकर लिखने का फ़ंक्शन)
+        window.startVoiceRecognition = () => {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            
+            if (!SpeechRecognition) {
+                alert("आपके ब्राउज़र में बोलकर टाइप करने की सुविधा समर्थित नहीं है। कृपया लिखकर दर्ज करें।");
+                return;
+            }
+
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'hi-IN';
+            recognition.interimResults = false;
+
+            const micBtn = document.getElementById('micBtn');
+            const micStatus = document.getElementById('micStatus');
+            const textArea = document.getElementById('orderItemsText');
+
+            recognition.onstart = () => {
+                micStatus.innerText = "सुन रहा हूँ...";
+                micBtn.classList.add("animate-pulse", "bg-red-100", "text-red-600");
+            };
+
+            recognition.onresult = (event) => {
+                const spokenText = event.results[0][0].transcript;
+                if (textArea.value.trim() !== "") {
+                    textArea.value += "\n" + spokenText;
+                } else {
+                    textArea.value = spokenText;
+                }
+            };
+
+            recognition.onerror = (event) => {
+                alert("आवाज पहचानने में समस्या हुई: " + event.error);
+            };
+
+            recognition.onend = () => {
+                micStatus.innerText = "बोलकर लिखें";
+                micBtn.classList.remove("animate-pulse", "bg-red-100", "text-red-600");
+            };
+
+            recognition.start();
+        };
+
+        // 📲 WHATSAPP ORDER FUNCTION
+        window.sendOrderWhatsApp = () => {
+            // यदि दुकान ब्लॉक है
+            if (storeData.isBlocked === true || storeData.status === "blocked") {
+                alert("यह दुकान वर्तमान में एडमिन द्वारा ब्लॉक की गई है। आप ऑर्डर नहीं भेज सकते!");
+                return;
+            }
+
+            const waNumber = storeData.whatsapp || storeData.phoneNumber;
+            if (!waNumber) return alert("दुकानदार का WhatsApp नंबर उपलब्ध नहीं है!");
+
+            const itemsText = document.getElementById('orderItemsText').value.trim();
+            const villageSelect = document.getElementById('villageSelect');
+            const selectedVillageName = villageSelect.options[villageSelect.selectedIndex].text;
+            const custName = document.getElementById('custName').value.trim();
+            const custPhone = document.getElementById('custPhone').value.trim();
+            const custAddress = document.getElementById('custAddress').value.trim();
+
+            if (!itemsText) {
+                alert("कृपया पहले अपने सामान की सूची लिखें या बोलकर दर्ज करें!");
+                return;
+            }
+
+            if (villageSelect.value === "0") {
+                alert("कृपया अपना गाँव चुनें!");
+                return;
+            }
+
+            if (!custName) {
+                alert("कृपया अपना नाम लिखें!");
+                return;
+            }
+
+            if (!custPhone || custPhone.length < 10) {
+                alert("कृपया अपना 10 अंकों का सही मोबाइल नंबर भरें!");
+                return;
+            }
+
+            if (!custAddress) {
+                alert("कृपया अपना पूरा पता दर्ज करें!");
+                return;
+            }
+
+            const msg = `🛒 *नया ऑर्डर आया है!* (${storeData.storeName})\n\n` +
+                        `📦 *सामान की सूची:*\n${itemsText}\n\n` +
+                        `👤 *ग्राहक का नाम:* ${custName}\n` +
+                        `📞 *मोबाइल नंबर:* ${custPhone}\n` +
+                        `🏡 *गाँव:* ${selectedVillageName}\n` +
+                        `📍 *पूरा पता:* ${custAddress}\n` +
+                        `🚚 *डिलीवरी शुल्क:* ₹${selectedVillageCharge}\n\n` +
+                        `कृपया मेरा ऑर्डर स्वीकार करें!`;
+
+            window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`, '_blank');
+        };
+    </script>
+</body>
+</html>
