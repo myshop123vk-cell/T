@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ऑनलाइन दुकान - TrustKart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        .store-header-bg {
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+        }
+        /* बिजनेस प्लान के लिए अत्यधिक आकर्षक और यूनिक डिजाइन */
+        .business-glow {
+            box-shadow: 0 15px 35px -5px rgba(168, 85, 247, 0.4);
+            border: 2px solid rgba(216, 180, 254, 0.6);
+        }
+        .business-header {
+            background: linear-gradient(135deg, #09090b 0%, #3b0764 50%, #581c87 100%) !important;
+        }
+        .premium-card {
+            background: rgba(255, 255, 255, 0.96);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(226, 232, 240, 0.8);
+            box-shadow: 0 10px 25px -3px rgba(0, 0, 0, 0.05);
+        }
+        /* नया बेहद आकर्षक और यूनिक रॉयल कूपन डिज़ाइन */
+        .royal-coupon-box {
+            background: linear-gradient(135deg, #2e1065 0%, #581c87 50%, #7e22ce 100%);
+            box-shadow: 0 10px 30px -5px rgba(126, 34, 206, 0.5);
+            border: 2px dashed #facc15;
+            position: relative;
+            overflow: hidden;
+        }
+        .royal-coupon-box::before {
+            content: "";
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .business-badge-pulse {
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+    </style>
+</head>
+<body id="bodyTheme" class="bg-slate-100 min-h-screen font-sans pb-36">
+
+    <!-- Store Header -->
+    <header id="storeHeader" class="relative text-white overflow-hidden store-header-bg border-b border-slate-800 shadow-2xl min-h-[280px] flex flex-col justify-between p-5 transition-all duration-500">
+        
+        <div id="storeBgContainer" class="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-35 scale-105 transition-transform duration-700"></div>
+        <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/80 to-slate-900/40"></div>
+
+        <!-- Top Navigation -->
+        <div class="relative z-20 w-full max-w-4xl mx-auto flex justify-between items-center mb-2">
+            <button onclick="goBack()" class="bg-black/50 hover:bg-black/70 backdrop-blur-md text-white px-4 py-2 rounded-full text-xs font-bold border border-white/20 flex items-center gap-2 transition shadow-lg">
+                <i class="fas fa-arrow-left"></i> <span>वापस जाएं</span>
+            </button>
+            <button onclick="shareStore()" class="bg-amber-500 hover:bg-amber-600 text-slate-950 px-4 py-2 rounded-full text-xs font-bold border border-amber-300 flex items-center gap-2 transition shadow-lg">
+                <i class="fas fa-share-alt"></i> <span>शेयर करें</span>
+            </button>
+        </div>
+
+        <!-- Header Main Info -->
+        <div class="relative max-w-4xl mx-auto flex flex-col md:flex-row items-center gap-6 z-10 w-full my-3">
+            <div class="relative shrink-0">
+                <img id="vendorPhoto" src="https://via.placeholder.com/120" class="w-28 h-28 md:w-32 md:h-32 rounded-full object-cover border-4 border-amber-400 shadow-[0_0_25px_rgba(0,0,0,0.5)]">
+            </div>
+            
+            <div class="text-center md:text-left flex-1 space-y-1.5">
+                <div class="flex items-center justify-center md:justify-start gap-2">
+                    <h2 id="vendorName" class="text-sm md:text-base font-bold text-amber-300 tracking-wide">दुकानदार का नाम</h2>
+                    <span id="storeBadge"></span>
+                </div>
+
+                <h1 id="storeName" class="text-2xl md:text-4xl font-black text-white drop-shadow-md">दुकान का नाम</h1>
+                <p id="storeCategory" class="text-orange-300 text-xs font-extrabold uppercase tracking-widest bg-black/40 px-3.5 py-1 rounded-full inline-block border border-white/10">कैटेगरी</p>
+                
+                <div class="flex flex-wrap items-center justify-center md:justify-start gap-3 text-xs text-slate-200 pt-1">
+                    <span id="storeAddress" class="flex items-center gap-1.5"><i class="fas fa-map-marker-alt text-amber-400"></i> पता लोड हो रहा है...</span>
+                    <span id="storePhone" class="flex items-center gap-1.5"></span>
+                    <span id="deliveryTime" class="flex items-center gap-1.5"><i class="fas fa-clock text-amber-400"></i> --</span>
+                    <span id="storeMap" class="flex items-center gap-1.5"></span>
+                </div>
+
+                <div id="socialLinks" class="flex justify-center md:justify-start gap-4 text-xl pt-2"></div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Blocked Banner -->
+    <div id="blockedBanner" class="hidden max-w-4xl mx-auto my-4 p-4 bg-red-100 border border-red-400 text-red-700 text-center font-bold rounded-2xl shadow">
+        🚫 यह दुकान वर्तमान में एडमिन द्वारा ब्लॉक या बंद कर दी गई है।
+    </div>
+
+    <!-- Main Container -->
+    <main id="orderContainer" class="max-w-4xl mx-auto p-4 space-y-6">
+
+        <!-- Offer Banner -->
+        <div id="offerBannerContainer" class="hidden bg-gradient-to-r from-orange-500 via-amber-500 to-yellow-500 text-white p-5 rounded-3xl shadow-xl border border-orange-300 relative overflow-hidden">
+            <div class="flex flex-col md:flex-row gap-5 items-center">
+                <img id="offerImage" src="" class="w-full md:w-36 h-36 rounded-2xl object-cover shadow-md hidden border-2 border-white/40">
+                <div class="space-y-2 flex-1 text-center md:text-left">
+                    <span class="bg-black/20 text-white text-[11px] font-black uppercase px-3 py-1 rounded-full border border-white/30 backdrop-blur-sm">🔥 विशेष ऑफ़र / त्योहार डिस्काउंट</span>
+                    <h3 id="offerTitle" class="text-xl md:text-2xl font-black drop-shadow">ऑफ़र का शीर्षक</h3>
+                    <p id="offerDesc" class="text-xs md:text-sm text-orange-50 font-medium">ऑफ़र का विवरण...</p>
+                    <div class="text-xs font-mono font-bold bg-black/30 px-3.5 py-1.5 rounded-xl inline-block border border-white/20 shadow-inner">
+                        ⏰ ऑफर समाप्त होने में समय: <span id="offerTimer" class="text-yellow-300 font-black">00:00:00</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- REFINED ROYAL DIGITAL COUPON DISPLAY (नया शानदार कूपन सेक्शन) -->
+        <div id="customerCouponBox" class="hidden royal-coupon-box text-white p-6 rounded-3xl flex flex-col md:flex-row justify-between items-center gap-5">
+            <div class="absolute -right-6 -bottom-6 text-white/5 text-8xl font-black pointer-events-none">
+                <i class="fas fa-ticket-alt"></i>
+            </div>
+            <div class="space-y-1.5 text-center md:text-left z-10">
+                <span class="bg-amber-400 text-slate-950 text-[10px] font-black uppercase px-3 py-1 rounded-full shadow-md flex items-center gap-1.5 w-fit mx-auto md:mx-0">
+                    <i class="fas fa-crown text-amber-900"></i> स्पेशल डिजिटल कूपन (Special Coupon)
+                </span>
+                <h3 id="cCouponCode" class="text-2xl font-black text-amber-300 tracking-wider drop-shadow">CODE</h3>
+                <p id="cCouponDetails" class="text-xs text-purple-100 font-medium">विवरण लोड हो रहा है...</p>
+            </div>
+            <div class="bg-black/30 border border-amber-400/40 px-5 py-3 rounded-2xl text-center backdrop-blur-md z-10 shadow-lg">
+                <p class="text-[10px] text-amber-300 font-black uppercase tracking-wider">वैधता (Expiry)</p>
+                <p id="cCouponExpiry" class="text-xs font-black text-white mt-0.5">--</p>
+            </div>
+        </div>
+
+        <!-- Simple Plan Notice -->
+        <div id="simplePlanNotice" class="hidden max-w-4xl mx-auto my-4 p-6 bg-amber-50 border border-amber-300 text-amber-900 text-center rounded-3xl shadow-md space-y-3">
+            <div class="w-12 h-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto text-xl shadow-inner">
+                <i class="fas fa-shopping-bag"></i>
+            </div>
+            <h3 class="text-base font-black">ऑनलाइन ऑर्डर सुविधा इस दुकान पर उपलब्ध नहीं है</h3>
+            <p class="text-xs text-amber-800 leading-relaxed max-w-lg mx-auto">यह दुकान वर्तमान में **Simple Plan** पर है। आप दुकान की जानकारी और नीचे दिए गए प्रोडक्ट्स देख सकते हैं, लेकिन सीधे WhatsApp ऑर्डर भेजने के लिए प्लान अपग्रेड करना होगा।</p>
+        </div>
+
+        <!-- BUSINESS PLAN PRODUCT CATALOG VIEW -->
+        <div id="storeProductCatalog" class="hidden premium-card p-6 rounded-3xl space-y-4 border-2 border-purple-200 shadow-purple-100">
+            <div class="flex justify-between items-center border-b pb-2">
+                <h3 class="text-sm font-black text-purple-900 uppercase flex items-center gap-2">
+                    <i class="fas fa-crown text-purple-600"></i> दुकान के विशेष प्रोडक्ट्स (Business Catalog)
+                </h3>
+                <span class="text-[10px] bg-purple-100 text-purple-800 font-bold px-2.5 py-0.5 rounded-full">क्लिक करके सीधे जोड़ें</span>
+            </div>
+            <div id="customerProductList" class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                <!-- प्रोडक्ट्स यहाँ लोड होंगे -->
+            </div>
+        </div>
+
+        <!-- ORDER PRODUCTS INPUT SECTION -->
+        <div id="orderFormBox1" class="premium-card p-6 rounded-3xl space-y-3">
+            <div class="flex justify-between items-center">
+                <label class="block text-xs font-bold text-slate-700 uppercase tracking-wide">1. सामान की सूची दर्ज करें:</label>
+                <button type="button" onclick="startVoiceRecognition()" id="micBtn" class="bg-amber-100 hover:bg-amber-200 text-amber-900 px-3.5 py-1.5 rounded-2xl text-xs font-bold flex items-center gap-2 border border-amber-300 transition shadow-sm">
+                    <i class="fas fa-microphone text-red-500 text-sm"></i> <span id="micStatus">बोलकर लिखें</span>
+                </button>
+            </div>
+            
+            <textarea id="orderItemsText" rows="4" placeholder="यहाँ सामान का नाम और मात्रा लिखें... (उदा. 1 किलो चीनी, 2 पैकेट दूध)" class="w-full p-4 border border-slate-200 rounded-2xl outline-none text-sm text-slate-800 bg-slate-50/80 focus:ring-2 focus:ring-amber-400 transition"></textarea>
+        </div>
+
+        <!-- CUSTOMER DELIVERY DETAILS SECTION -->
+        <div id="orderFormBox2" class="premium-card p-6 rounded-3xl space-y-4">
+            <h3 class="text-sm font-bold text-slate-800 border-b border-slate-200 pb-3 flex items-center gap-2">
+                <i class="fas fa-truck text-amber-500 text-base"></i> 2. डिलीवरी की जानकारी भरें:
+            </h3>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">अपना गाँव चुनें *</label>
+                <select id="villageSelect" onchange="updateDeliveryCharge()" class="w-full p-3.5 border border-slate-200 rounded-2xl outline-none font-bold text-slate-800 bg-slate-50/80 focus:ring-2 focus:ring-amber-400 text-sm transition">
+                    <option value="0">गाँव चुनें (Select Village)</option>
+                </select>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">आपका नाम *</label>
+                    <input type="text" id="custName" placeholder="अपना पूरा नाम लिखें" class="w-full p-3.5 border border-slate-200 rounded-2xl outline-none text-sm text-slate-800 bg-slate-50/80 focus:ring-2 focus:ring-amber-400 transition">
+                </div>
+                <div>
+                    <label class="block text-xs font-bold text-slate-600 mb-1.5">मोबाइल नंबर *</label>
+                    <input type="tel" id="custPhone" placeholder="10 अंकों का मोबाइल नंबर" maxlength="10" class="w-full p-3.5 border border-slate-200 rounded-2xl outline-none text-sm text-slate-800 bg-slate-50/80 focus:ring-2 focus:ring-amber-400 transition">
+                </div>
+            </div>
+
+            <div>
+                <label class="block text-xs font-bold text-slate-600 mb-1.5">पूरा पता व लैंडमार्क *</label>
+                <textarea id="custAddress" rows="2" placeholder="मकान नं., गली/मोहल्ला, पास का लैंडमार्क" class="w-full p-3.5 border border-slate-200 rounded-2xl outline-none text-sm text-slate-800 bg-slate-50/80 focus:ring-2 focus:ring-amber-400 transition"></textarea>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- FIXED BOTTOM ORDER BAR -->
+    <div id="bottomOrderBar" class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 p-4 shadow-[0_-10px_25px_rgba(0,0,0,0.08)] z-50">
+        <div class="max-w-4xl mx-auto flex justify-between items-center gap-4">
+            <div>
+                <p class="text-xs text-slate-500 font-bold">डिलीवरी शुल्क: <span id="displayCharge" class="text-amber-600 font-black">₹0</span></p>
+                <p class="text-base md:text-lg font-black text-slate-800">WhatsApp ऑर्डर</p>
+            </div>
+            <button id="mainOrderBtn" onclick="sendOrderWhatsApp()" class="bg-green-600 hover:bg-green-700 text-white px-7 py-3.5 rounded-2xl font-bold transition shadow-lg hover:shadow-green-500/30 flex items-center gap-2 text-sm md:text-base">
+                <i class="fab fa-whatsapp text-xl"></i> ऑर्डर भेजें
+            </button>
+        </div>
+    </div>
+    <!-- FIREBASE SCRIPT -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, doc, onSnapshot, collection, getDocs, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDwmv2NuqGv7Fnft7tWS4-hlIVxNh8rz1Q",
+            authDomain: "digital-7c1c5.firebaseapp.com",
+            projectId: "digital-7c1c5",
+            storageBucket: "digital-7c1c5.firebasestorage.app",
+            messagingSenderId: "297384739211",
+            appId: "1:297384739211:web:4f2fe08c9f65bb7bea2f8e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const vendorId = urlParams.get('id');
+
+        let storeData = {};
+        let selectedVillageCharge = 0;
+        let offerTimerInterval = null;
+
+        window.goBack = () => {
+            if (document.referrer) { window.history.back(); } 
+            else { window.location.href = "index.html"; }
+        };
+
+        window.shareStore = async () => {
+            const currentUrl = window.location.href;
+            const title = storeData.storeName || "ऑनलाइन दुकान - TrustKart";
+            if (navigator.share) {
+                try { await navigator.share({ title: title, text: `ऑनलाइन दुकान देखें: ${title}`, url: currentUrl }); } 
+                catch (err) { console.log("Share canceled", err); }
+            } else {
+                navigator.clipboard.writeText(currentUrl);
+                alert("दुकान का लिंक कॉपी हो गया है!");
+            }
+        };
+
+        if (vendorId) {
+            loadStoreDetails(vendorId);
+            loadStoreConfig(vendorId);
+            loadVillages(vendorId);
+            loadOffer(vendorId);
+            loadStoreProducts(vendorId);
+            loadCustomerCoupon(vendorId);
+        } else {
+            alert("दुकान का ID नहीं मिला!");
+        }
+
+        function loadStoreDetails(uid) {
+            onSnapshot(doc(db, "vendors", uid), (snap) => {
+                if (snap.exists()) {
+                    storeData = snap.data();
+                    const plan = storeData.subscriptionPlan || 'simple';
+
+                    if (storeData.isBlocked === true || storeData.status === "blocked") {
+                        document.getElementById('blockedBanner').classList.remove('hidden');
+                        document.getElementById('orderContainer').classList.add('hidden');
+                        document.getElementById('bottomOrderBar').classList.add('hidden');
+                        return;
+                    }
+
+                    if (plan === 'business') {
+                        document.getElementById('storeHeader').classList.add('business-header', 'business-glow');
+                        document.getElementById('vendorPhoto').classList.remove('border-amber-400');
+                        document.getElementById('vendorPhoto').classList.add('border-purple-300', 'shadow-[0_0_35px_rgba(216,180,254,0.6)]');
+                        document.getElementById('storeProductCatalog').classList.remove('hidden');
+                    }
+
+                    if (plan === 'simple') {
+                        document.getElementById('storePhone').innerHTML = "";
+                        document.getElementById('orderFormBox1').classList.add('hidden');
+                        document.getElementById('orderFormBox2').classList.add('hidden');
+                        document.getElementById('bottomOrderBar').classList.add('hidden');
+                        document.getElementById('simplePlanNotice').classList.remove('hidden');
+                    } else {
+                        document.getElementById('storePhone').innerHTML = `<i class="fas fa-phone text-amber-400"></i> ${storeData.phoneNumber || '--'}`;
+                        document.getElementById('orderFormBox1').classList.remove('hidden');
+                        document.getElementById('orderFormBox2').classList.remove('hidden');
+                        document.getElementById('bottomOrderBar').classList.remove('hidden');
+                        document.getElementById('simplePlanNotice').classList.add('hidden');
+                    }
+
+                    document.getElementById('vendorName').innerText = storeData.ownerName || storeData.vendorName || "दुकानदार";
+                    document.getElementById('storeName').innerText = storeData.storeName || "दुकान का नाम";
+                    document.getElementById('storeCategory').innerText = storeData.category || "";
+                    document.getElementById('storeAddress').innerHTML = `<i class="fas fa-map-marker-alt text-amber-400"></i> ${storeData.address || 'पता उपलब्ध नहीं'}`;
+
+                    if (storeData.vendorPhoto || storeData.storePhoto) {
+                        document.getElementById('vendorPhoto').src = storeData.vendorPhoto || storeData.storePhoto;
+                    }
+                    if (storeData.storePhoto) {
+                        document.getElementById('storeBgContainer').style.backgroundImage = `url('${storeData.storePhoto}')`;
+                    }
+                    if (storeData.mapLink) {
+                        document.getElementById('storeMap').innerHTML = `<a href="${storeData.mapLink}" target="_blank" class="text-amber-400 hover:underline font-bold"><i class="fas fa-directions"></i> मैप देखें</a>`;
+                    }
+
+                    const badgeElem = document.getElementById('storeBadge');
+                    if (plan === 'business') {
+                        badgeElem.innerHTML = `<span class="bg-gradient-to-r from-purple-500 to-indigo-500 text-white text-[11px] font-black px-2.5 py-0.5 rounded-full shadow-md border border-purple-200 business-badge-pulse flex items-center gap-1"><i class="fas fa-crown"></i> Elite Business</span>`;
+                    } else if (plan === 'annual' || storeData.isPremium) {
+                        badgeElem.innerHTML = `<i class="fas fa-check-circle text-amber-400 text-lg drop-shadow" title="Verified Store"></i>`;
+                    } else {
+                        badgeElem.innerHTML = "";
+                    }
+
+                    let socialsHtml = "";
+                    if (storeData.facebookLink) socialsHtml += `<a href="${storeData.facebookLink}" target="_blank" class="text-blue-400"><i class="fab fa-facebook"></i></a>`;
+                    if (storeData.instagramLink) socialsHtml += `<a href="${storeData.instagramLink}" target="_blank" class="text-pink-400"><i class="fab fa-instagram"></i></a>`;
+                    document.getElementById('socialLinks').innerHTML = socialsHtml;
+                }
+            });
+        }
+
+        async function loadCustomerCoupon(uid) {
+            try {
+                const snap = await getDoc(doc(db, "vendors", uid, "config", "coupon"));
+                if (snap.exists()) {
+                    const c = snap.data();
+                    if (c.code) {
+                        document.getElementById('cCouponCode').innerText = c.code;
+                        document.getElementById('cCouponDetails').innerText = `ऑफर: ${c.discount} (न्यूनतम खरीदारी: ₹${c.minSpend || 0})`;
+                        document.getElementById('cCouponExpiry').innerText = c.expiry || "असीमित";
+                        document.getElementById('customerCouponBox').classList.remove('hidden');
+                    }
+                }
+            } catch (e) { console.log("Coupon load error", e); }
+        }
+
+        async function loadStoreProducts(uid) {
+            const container = document.getElementById('customerProductList');
+            try {
+                const snap = await getDocs(collection(db, "vendors", uid, "products"));
+                if (snap.empty) {
+                    container.innerHTML = `<p class="text-xs text-gray-400 col-span-2 text-center py-2">अभी कोई प्रोडक्ट नहीं जोड़ा गया है।</p>`;
+                    return;
+                }
+                container.innerHTML = "";
+                snap.forEach(d => {
+                    const p = d.data();
+                    container.innerHTML += `
+                        <div class="flex justify-between items-center p-3.5 bg-slate-50 hover:bg-purple-50/50 border rounded-2xl transition">
+                            <div>
+                                <span class="text-[10px] font-bold text-purple-700 bg-purple-100 px-2 py-0.5 rounded">${p.category}</span>
+                                <h4 class="text-xs font-black text-slate-800 mt-1">${p.name}</h4>
+                            </div>
+                            <div class="text-right space-y-1">
+                                <span class="text-xs font-black text-emerald-600 block">₹${p.price}</span>
+                                <button onclick="addProductToOrder('${p.name}', '${p.price}')" class="bg-purple-600 hover:bg-purple-700 text-white text-[11px] font-bold px-3 py-1 rounded-xl transition shadow-sm">+ जोड़ें</button>
+                            </div>
+                        </div>
+                    `;
+                });
+            } catch (e) { console.log("Products load error", e); }
+        }
+
+        // प्रोडक्ट पर क्लिक करने पर अब स्क्रीन ऊपर नहीं जाएगी, चुपचाप आर्डर लिस्ट में जुड़ जाएगा
+        window.addProductToOrder = (name, price) => {
+            const textArea = document.getElementById('orderItemsText');
+            const itemStr = `${name} - ₹${price}`;
+            textArea.value = textArea.value.trim() !== "" ? textArea.value + "\n" + itemStr : itemStr;
+        };
+
+        function loadStoreConfig(uid) {
+            onSnapshot(doc(db, "vendors", uid, "config", "settings"), (snap) => {
+                if (snap.exists()) {
+                    const cfg = snap.data();
+                    storeData.whatsapp = cfg.whatsapp;
+                    document.getElementById('deliveryTime').innerHTML = `<i class="fas fa-clock text-amber-400"></i> ${cfg.deliveryTime || '30-45 min'}`;
+                }
+            });
+        }
+
+        function loadVillages(uid) {
+            onSnapshot(collection(db, "vendors", uid, "villages"), (snap) => {
+                const select = document.getElementById('villageSelect');
+                select.innerHTML = `<option value="0">गाँव चुनें (Select Village)</option>`;
+                snap.forEach(d => {
+                    const v = d.data();
+                    select.innerHTML += `<option value="${v.charge}">${v.name} (₹${v.charge} डिलीवरी)</option>`;
+                });
+            });
+        }
+
+        window.updateDeliveryCharge = () => {
+            const select = document.getElementById('villageSelect');
+            selectedVillageCharge = Number(select.value);
+            document.getElementById('displayCharge').innerText = `₹${selectedVillageCharge}`;
+        };
+
+        function loadOffer(uid) {
+            onSnapshot(doc(db, "vendors", uid, "config", "offer"), (snap) => {
+                if (snap.exists()) {
+                    const offer = snap.data();
+                    const now = new Date().getTime();
+                    const expTime = new Date(offer.expiry).getTime();
+
+                    if (offer.expiry && expTime > now) {
+                        document.getElementById('offerBannerContainer').classList.remove('hidden');
+                        document.getElementById('offerTitle').innerText = offer.title || "";
+                        document.getElementById('offerDesc').innerText = offer.desc || "";
+
+                        if (offer.image) {
+                            const imgElem = document.getElementById('offerImage');
+                            imgElem.src = offer.image;
+                            imgElem.classList.remove('hidden');
+                        }
+
+                        if (offerTimerInterval) clearInterval(offerTimerInterval);
+                        offerTimerInterval = setInterval(() => {
+                            const distance = expTime - new Date().getTime();
+                            if (distance < 0) {
+                                clearInterval(offerTimerInterval);
+                                document.getElementById('offerBannerContainer').classList.add('hidden');
+                                return;
+                            }
+                            const h = Math.floor((distance % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                            const m = Math.floor((distance % (1000 * 60 * 60)) / (1000 * 60));
+                            const s = Math.floor((distance % (1000 * 60)) / 1000);
+                            document.getElementById('offerTimer').innerText = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+                        }, 1000);
+                    }
+                }
+            });
+        }
+
+        window.startVoiceRecognition = () => {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) { alert("ब्राउज़र समर्थित नहीं है।"); return; }
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'hi-IN';
+            recognition.onresult = (e) => {
+                const t = e.results[0][0].transcript;
+                const ta = document.getElementById('orderItemsText');
+                ta.value = ta.value ? ta.value + "\n" + t : t;
+            };
+            recognition.start();
+        };
+
+        window.sendOrderWhatsApp = () => {
+            const plan = storeData.subscriptionPlan || 'simple';
+            if (plan === 'simple') { alert("यह दुकान Simple Plan पर है!"); return; }
+
+            const waNumber = storeData.whatsapp || storeData.phoneNumber;
+            if (!waNumber) return alert("WhatsApp नंबर उपलब्ध नहीं है!");
+
+            const itemsText = document.getElementById('orderItemsText').value.trim();
+            const villageSelect = document.getElementById('villageSelect');
+            const vName = villageSelect.options[villageSelect.selectedIndex].text;
+            const cName = document.getElementById('custName').value.trim();
+            const cPhone = document.getElementById('custPhone').value.trim();
+            const cAddr = document.getElementById('custAddress').value.trim();
+
+            if (!itemsText) return alert("सामान की सूची लिखें!");
+            if (villageSelect.value === "0") return alert("गाँव चुनें!");
+            if (!cName) return alert("नाम लिखें!");
+            if (!cPhone || cPhone.length < 10) return alert("सही मोबाइल नंबर भरें!");
+            if (!cAddr) return alert("पता दर्ज करें!");
+
+            const msg = `🛒 *नया ऑर्डर!* (${storeData.storeName})\n\n` +
+                        `📦 *सामान:*\n${itemsText}\n\n` +
+                        `👤 *नाम:* ${cName}\n` +
+                        `📞 *नंबर:* ${cPhone}\n` +
+                        `🏡 *गाँव:* ${vName}\n` +
+                        `📍 *पता:* ${cAddr}\n` +
+                        `🚚 *डिलीवरी शुल्क:* ₹${selectedVillageCharge}\n\n` +
+                        `कृपया मेरा ऑर्डर स्वीकार करें!`;
+
+            window.open(`https://wa.me/${waNumber}?text=${encodeURIComponent(msg)}`, '_blank');
+        };
+    </script>
+</body>
+</html>
