@@ -1,0 +1,408 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>सभी दुकानें - TrustKart</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        /* Scrollbar hide for categories */
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        
+        /* Shimmer Animation for Offer Cards */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(245, 158, 11, 0.2); }
+            50% { box-shadow: 0 0 25px rgba(245, 158, 11, 0.45); }
+        }
+        .offer-card-glow {
+            animation: pulse-glow 3s infinite ease-in-out;
+        }
+    </style>
+</head>
+<body class="bg-slate-100 min-h-screen font-sans pb-24 flex flex-col m-0 p-0">
+
+    <!-- Header & Search Bar -->
+    <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
+        <div class="max-w-4xl mx-auto p-4 space-y-3">
+            
+            <!-- Top Nav without Back Button -->
+            <div class="flex items-center justify-between">
+                <div></div>
+                <h1 class="text-lg font-black text-amber-400">TrustKart</h1>
+                <div></div>
+            </div>
+
+            <!-- Page Title -->
+            <div>
+                <h2 class="text-xl font-bold">आस-पास की दुकानें</h2>
+                <p class="text-xs text-slate-400">अपनी पसंदीदा दुकान चुनें और व्हाट्सएप पर ऑर्डर भेजें</p>
+            </div>
+
+            <!-- Search Input Box -->
+            <div class="relative">
+                <i class="fas fa-search absolute left-4 top-3.5 text-gray-400"></i>
+                <input type="text" id="searchInput" oninput="filterStores()" placeholder="दुकानदार या दुकान का नाम खोजें..." class="w-full pl-11 pr-4 py-3 rounded-xl bg-slate-800 text-white placeholder-slate-400 border border-slate-700 outline-none focus:ring-2 focus:ring-amber-400 text-sm">
+            </div>
+
+            <!-- DYNAMIC CATEGORY & OFFER FILTER TABS -->
+            <div id="categoryContainer" class="flex gap-2 overflow-x-auto no-scrollbar pt-1 pb-1 items-center">
+                <!-- ALL SHOPS BUTTON -->
+                <button onclick="selectCategory('ALL', this)" class="cat-btn bg-amber-500 text-white px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border border-amber-400 shadow-sm transition">
+                    सभी दुकानें (All)
+                </button>
+                
+                <!-- ONLY OFFERS FILTER BUTTON -->
+                <button id="offerOnlyBtn" onclick="toggleOfferOnly(this)" class="bg-gradient-to-r from-red-600 to-orange-500 text-white px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border border-orange-400 shadow-sm transition flex items-center gap-1.5">
+                    <i class="fas fa-fire animate-bounce text-yellow-300"></i> केवल ऑफ़र वाली दुकानें
+                </button>
+            </div>
+
+        </div>
+    </header>
+
+    <!-- Main Content: Store Cards Grid -->
+    <main class="max-w-4xl mx-auto p-4 w-full flex-1">
+        
+        <!-- Loading Spinner -->
+        <div id="loading" class="text-center py-12">
+            <i class="fas fa-spinner fa-spin text-amber-500 text-3xl"></i>
+            <p class="text-xs text-gray-500 mt-2 font-bold">दुकानें लोड हो रही हैं...</p>
+        </div>
+
+        <!-- Empty / No Stores Found Message -->
+        <div id="noStores" class="hidden text-center py-12 bg-white rounded-2xl shadow-sm border border-slate-200">
+            <i class="fas fa-store-slash text-slate-300 text-4xl mb-3"></i>
+            <h3 class="text-base font-bold text-gray-700">कोई दुकान नहीं मिली!</h3>
+            <p class="text-xs text-gray-400 mt-1">कृपया कोई दूसरा नाम या फ़िल्टर बदलें।</p>
+        </div>
+
+        <!-- Stores Container -->
+        <div id="storesGrid" class="grid grid-cols-1 md:grid-cols-2 gap-4"></div>
+
+    </main>
+
+    <!-- OFFLINE / ERROR ENTERTAINMENT SCREEN (Hidden by default) -->
+    <div id="offlineScreen" class="hidden fixed inset-0 bg-slate-900 text-white flex flex-col items-center justify-center p-6 text-center z-50">
+        <div class="w-16 h-16 bg-red-600/20 text-red-500 rounded-full flex items-center justify-center text-3xl mb-4 animate-bounce">
+            <i class="fas fa-wifi-slash"></i>
+        </div>
+        <h2 class="text-lg font-black mb-1">इंटरनेट कनेक्शन नहीं है!</h2>
+        <p class="text-xs text-slate-400 mb-6">लगता है नेटवर्क धीमा है या गायब है। चिंता न करें, जब तक नेट वापस आता है, इस गेम से टाइम पास करें! 🎮</p>
+
+        <!-- ENTERTAINMENT MINI GAME -->
+        <div class="bg-slate-800/80 border border-slate-700 p-4 rounded-2xl w-full max-w-xs mb-6 shadow-xl">
+            <p class="text-xs text-slate-300 font-bold mb-2">🎁 स्कोर बनाएँ:</p>
+            <div class="text-3xl font-black text-emerald-400 mb-3" id="scoreCount">0</div>
+            <button onclick="incrementScore()" class="w-full bg-red-600 hover:bg-red-700 text-white text-xs font-black py-2.5 rounded-xl shadow-lg transition active:scale-95">
+                🪙 कॉइन कलेक्ट करें!
+            </button>
+        </div>
+
+        <!-- REFRESH BUTTON -->
+        <button onclick="checkConnectionAndReload()" class="bg-white text-slate-900 text-xs font-black px-6 py-3 rounded-full shadow-lg flex items-center gap-2 transition hover:bg-slate-100">
+            <i class="fas fa-rotate"></i> दोबारा प्रयास करें (Refresh)
+        </button>
+    </div>
+
+    <!-- BOTTOM FLOATING NAV BAR -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white/95 backdrop-blur-md border-t border-slate-200 z-40 px-6 py-2 flex justify-between items-center max-w-md mx-auto rounded-t-2xl shadow-lg shrink-0">
+        <a href="index.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-red-600 transition font-bold text-[10px]">
+            <i class="fas fa-home text-base"></i>
+            <span>Home</span>
+        </a>
+        <button onclick="window.scrollTo({top: 0, behavior: 'smooth'}); checkConnectionAndReload();" class="flex flex-col items-center gap-1 text-red-600 font-bold text-[10px]">
+            <i class="fas fa-store text-base"></i>
+            <span>Shop</span>
+        </button>
+        <a href="profile.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-red-600 transition font-bold text-[10px]">
+            <i class="far fa-user text-base"></i>
+            <span>Profile</span>
+        </a>
+        <a href="track.html" class="flex flex-col items-center gap-1 text-slate-400 hover:text-red-600 transition font-bold text-[10px]">
+            <i class="fas fa-route text-base"></i>
+            <span>Track</span>
+        </a>
+    </div>
+    <!-- FIREBASE AND SCRIPT LOGIC -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getFirestore, collection, onSnapshot, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyDwmv2NuqGv7Fnft7tWS4-hlIVxNh8rz1Q",
+            authDomain: "digital-7c1c5.firebaseapp.com",
+            projectId: "digital-7c1c5",
+            storageBucket: "digital-7c1c5.firebasestorage.app",
+            messagingSenderId: "297384739211",
+            appId: "1:297384739211:web:4f2fe08c9f65bb7bea2f8e"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getFirestore(app);
+
+        let allVendors = [];
+        let selectedCategory = "ALL";
+        let showOffersOnly = false;
+
+        // Firebase से दुकानों और उनके ऑफर्स की जानकारी लोड करना
+        function fetchStores() {
+            onSnapshot(collection(db, "vendors"), async (snapshot) => {
+                const vendorPromises = [];
+                const categoriesSet = new Set();
+
+                snapshot.forEach((vendorDoc) => {
+                    const data = vendorDoc.data();
+                    
+                    if (data.isBlocked !== true && data.status !== "blocked") {
+                        if (data.category && data.category.trim() !== "") {
+                            categoriesSet.add(data.category.trim());
+                        }
+
+                        const promise = getDoc(doc(db, "vendors", vendorDoc.id, "config", "offer")).then((offerSnap) => {
+                            let activeOffer = null;
+                            if (offerSnap.exists()) {
+                                const offerData = offerSnap.data();
+                                const now = new Date().getTime();
+                                const expTime = new Date(offerData.expiry).getTime();
+
+                                if (offerData.expiry && expTime > now) {
+                                    activeOffer = offerData;
+                                }
+                            }
+                            return { id: vendorDoc.id, ...data, activeOffer };
+                        });
+
+                        vendorPromises.push(promise);
+                    }
+                });
+
+                allVendors = await Promise.all(vendorPromises);
+                document.getElementById('loading').classList.add('hidden');
+                renderCategoryTabs(Array.from(categoriesSet));
+                filterStores();
+            });
+        }
+
+        // कैटेगरी के बटन बनाएं
+        function renderCategoryTabs(categories) {
+            const container = document.getElementById('categoryContainer');
+            
+            let html = `
+                <button onclick="selectCategory('ALL', this)" class="cat-btn ${selectedCategory === 'ALL' && !showOffersOnly ? 'bg-amber-500 text-white border-amber-400' : 'bg-slate-800 text-slate-300 border-slate-700'} px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border shadow-sm transition">
+                    सभी दुकानें (All)
+                </button>
+                
+                <button id="offerOnlyBtn" onclick="toggleOfferOnly(this)" class="${showOffersOnly ? 'bg-gradient-to-r from-red-600 to-orange-500 text-white border-orange-400 ring-2 ring-orange-300' : 'bg-slate-800 text-slate-300 border-slate-700'} px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border shadow-sm transition flex items-center gap-1.5">
+                    <i class="fas fa-fire text-yellow-400"></i> केवल ऑफ़र वाली
+                </button>
+            `;
+
+            categories.forEach(cat => {
+                const isActive = selectedCategory === cat && !showOffersOnly;
+                html += `
+                    <button onclick="selectCategory('${cat}', this)" class="cat-btn ${isActive ? 'bg-amber-500 text-white border-amber-400' : 'bg-slate-800 text-slate-300 border-slate-700'} px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap border shadow-sm transition">
+                        ${cat}
+                    </button>
+                `;
+            });
+
+            container.innerHTML = html;
+        }
+
+        window.selectCategory = (catName, btnElem) => {
+            selectedCategory = catName;
+            showOffersOnly = false;
+            updateTabStyles();
+            filterStores();
+        };
+
+        window.toggleOfferOnly = (btnElem) => {
+            showOffersOnly = !showOffersOnly;
+            if (showOffersOnly) selectedCategory = "ALL";
+            updateTabStyles();
+            filterStores();
+        };
+
+        function updateTabStyles() {
+            renderCategoryTabs(Array.from(new Set(allVendors.map(v => v.category).filter(Boolean))));
+        }
+
+        window.filterStores = () => {
+            const query = document.getElementById('searchInput').value.toLowerCase().trim();
+
+            const filtered = allVendors.filter(v => {
+                const sName = (v.storeName || '').toLowerCase();
+                const oName = (v.ownerName || v.vendorName || '').toLowerCase();
+                const cat = (v.category || '').toLowerCase();
+
+                const matchesSearch = sName.includes(query) || oName.includes(query) || cat.includes(query);
+                const matchesCategory = selectedCategory === "ALL" || (v.category && v.category.trim() === selectedCategory);
+                const matchesOffer = !showOffersOnly || (v.activeOffer !== null);
+
+                return matchesSearch && matchesCategory && matchesOffer;
+            });
+
+            renderStores(filtered);
+        };
+
+        function renderStores(vendors) {
+            const grid = document.getElementById('storesGrid');
+            const noStores = document.getElementById('noStores');
+
+            if (vendors.length === 0) {
+                grid.innerHTML = "";
+                noStores.classList.remove('hidden');
+                return;
+            }
+
+            noStores.classList.add('hidden');
+            let html = "";
+
+            vendors.forEach((store) => {
+                const vendorPhoto = store.vendorPhoto || store.storePhoto || 'https://via.placeholder.com/100';
+                const storePhoto = store.storePhoto || vendorPhoto;
+                const ownerName = store.ownerName || store.vendorName || 'दुकानदार';
+                const storeName = store.storeName || 'दुकान का नाम';
+                const category = store.category || 'जनरल स्टोर';
+                const address = store.address || 'पता उपलब्ध नहीं';
+                const isPremium = store.isPremium || false;
+                const hasOffer = store.activeOffer !== null;
+
+                html += `
+                    <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all overflow-hidden border ${hasOffer ? 'border-amber-400 offer-card-glow' : 'border-slate-200'} flex flex-col justify-between group relative">
+                        
+                        <!-- Header Banner -->
+                        <div class="h-28 bg-slate-800 relative bg-cover bg-center cursor-pointer" style="background-image: url('${storePhoto}')" onclick="openStore('${store.id}')">
+                            <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
+                            
+                            <!-- Category Badge -->
+                            <span class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md text-amber-400 text-[10px] font-black uppercase px-2.5 py-1 rounded-full border border-amber-400/30 shadow">
+                                ${category}
+                            </span>
+
+                            <!-- SHARE BUTTON ON BANNER -->
+                            <button onclick="event.stopPropagation(); shareStore('${store.id}', '${encodeURIComponent(storeName)}')" class="absolute top-3 left-3 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white w-8 h-8 rounded-full flex items-center justify-center border border-white/30 shadow transition active:scale-95" title="दुकान शेयर करें">
+                                <i class="fas fa-share-alt text-xs"></i>
+                            </button>
+
+                            <!-- 🔥 UNIQUE OFFER BADGE -->
+                            ${hasOffer ? `
+                                <div class="absolute bottom-2 left-3 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-lg flex items-center gap-1 animate-pulse border border-yellow-300">
+                                    <i class="fas fa-gift text-yellow-300"></i>
+                                    <span>ऑफ़र चालू है!</span>
+                                </div>
+                            ` : ''}
+                        </div>
+
+                        <!-- Card Content -->
+                        <div class="p-4 relative pt-0 flex-1 flex flex-col justify-between cursor-pointer" onclick="openStore('${store.id}')">
+                            
+                            <!-- Profile Image & Status -->
+                            <div class="-mt-10 mb-2 flex justify-between items-end">
+                                <img src="${vendorPhoto}" class="w-16 h-16 rounded-full object-cover border-4 border-white shadow-md bg-white">
+                                <span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                                    <i class="fas fa-door-open"></i> खुला है
+                                </span>
+                            </div>
+
+                            <!-- Store Name & Premium Verification -->
+                            <div>
+                                <div class="flex items-center gap-1.5">
+                                    <h3 class="text-base font-black text-gray-800 group-hover:text-amber-600 transition">${storeName}</h3>
+                                    ${isPremium ? '<i class="fas fa-check-circle text-amber-500 text-sm" title="Verified Premium Store"></i>' : ''}
+                                </div>
+                                <p class="text-xs font-semibold text-gray-500 mb-2">संचालक: ${ownerName}</p>
+                                
+                                <p class="text-xs text-gray-500 flex items-center gap-1 line-clamp-1 mb-2">
+                                    <i class="fas fa-map-marker-alt text-amber-500 shrink-0"></i> ${address}
+                                </p>
+                            </div>
+
+                            <!-- 🎁 ACTIVE OFFER DISPLAY BOX -->
+                            ${hasOffer ? `
+                                <div class="mt-2 p-2.5 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-300/50 rounded-xl flex items-center gap-2.5">
+                                    <div class="bg-gradient-to-tr from-amber-500 to-orange-500 text-white w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm">
+                                        <i class="fas fa-percentage text-sm"></i>
+                                    </div>
+                                    <div class="overflow-hidden">
+                                        <h4 class="text-xs font-black text-amber-900 truncate">${store.activeOffer.title || 'विशेष डिस्काउंट ऑफ़र'}</h4>
+                                        <p class="text-[10px] text-amber-700 truncate">${store.activeOffer.desc || 'ऑर्डर करने पर छूट प्राप्त करें'}</p>
+                                    </div>
+                                </div>
+                            ` : ''}
+
+                            <!-- Action Button Footer -->
+                            <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
+                                <span class="text-xs font-bold text-gray-600">सामान ऑर्डर करें</span>
+                                <span class="bg-amber-100 text-amber-800 group-hover:bg-amber-500 group-hover:text-white transition px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm">
+                                    दुकान देखें <i class="fas fa-arrow-right text-[10px]"></i>
+                                </span>
+                            </div>
+
+                        </div>
+                    </div>
+                `;
+            });
+
+            grid.innerHTML = html;
+        }
+
+        // दुकान के स्टोर पेज (store.html) पर रिडायरेक्ट करें
+        window.openStore = (vendorId) => {
+            window.location.href = `store.html?id=${vendorId}`;
+        };
+
+        // शेयर करने का फंक्शन
+        window.shareStore = (vendorId, storeName) => {
+            const decodedName = decodeURIComponent(storeName);
+            const shareUrl = `${window.location.origin}/store.html?id=${vendorId}`;
+            
+            if (navigator.share) {
+                navigator.share({
+                    title: decodedName,
+                    text: `${decodedName} से TrustKart पर ऑनलाइन सामान ऑर्डर करें:`,
+                    url: shareUrl,
+                }).catch((error) => console.log('Sharing failed', error));
+            } else {
+                navigator.clipboard.writeText(shareUrl);
+                alert(`दुकान का लिंक कॉपी हो गया है!\n${shareUrl}`);
+            }
+        };
+
+        // Offline / Online Game & Connection Logic
+        let score = 0;
+        function incrementScore() {
+            score += 1;
+            document.getElementById('scoreCount').innerText = score;
+        }
+
+        function checkConnection() {
+            const offlineScreen = document.getElementById('offlineScreen');
+            if (!navigator.onLine) {
+                offlineScreen.classList.remove('hidden');
+            } else {
+                offlineScreen.classList.add('hidden');
+            }
+        }
+
+        function checkConnectionAndReload() {
+            if (!navigator.onLine) {
+                alert("अभी भी इंटरनेट उपलब्ध नहीं है!");
+            } else {
+                window.location.reload();
+            }
+        }
+
+        window.addEventListener('online', checkConnection);
+        window.addEventListener('offline', checkConnection);
+
+        // Load initialization
+        window.onload = () => {
+            checkConnection();
+            fetchStores();
+        };
+    </script>
+</body>
+</html>
