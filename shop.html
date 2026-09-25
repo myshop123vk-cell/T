@@ -27,11 +27,12 @@
     <header class="bg-slate-900 text-white sticky top-0 z-50 shadow-md">
         <div class="max-w-4xl mx-auto p-4 space-y-3">
             
-            <!-- Top Nav without Back Button -->
+            <!-- Top Nav with Dynamic Back Button -->
             <div class="flex items-center justify-between">
-                <div></div>
+                <button onclick="goBack()" class="bg-white/10 hover:bg-white/20 text-white px-3.5 py-1.5 rounded-full text-xs font-bold flex items-center gap-2 border border-white/10 transition">
+                    <i class="fas fa-arrow-left"></i> <span>वापस जाएं (Back)</span>
+                </button>
                 <h1 class="text-lg font-black text-amber-400">TrustKart</h1>
-                <div></div>
             </div>
 
             <!-- Page Title -->
@@ -125,6 +126,7 @@
             <span>Track</span>
         </a>
     </div>
+
     <!-- FIREBASE AND SCRIPT LOGIC -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -145,6 +147,15 @@
         let allVendors = [];
         let selectedCategory = "ALL";
         let showOffersOnly = false;
+
+        // Back Button Logic
+        window.goBack = () => {
+            if (document.referrer) {
+                window.history.back();
+            } else {
+                window.location.href = "index.html";
+            }
+        };
 
         // Firebase से दुकानों और उनके ऑफर्स की जानकारी लोड करना
         function fetchStores() {
@@ -271,35 +282,25 @@
                 const hasOffer = store.activeOffer !== null;
 
                 html += `
-                    <div class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all overflow-hidden border ${hasOffer ? 'border-amber-400 offer-card-glow' : 'border-slate-200'} flex flex-col justify-between group relative">
+                    <div onclick="openStore('${store.id}')" class="bg-white rounded-2xl shadow-sm hover:shadow-lg transition-all cursor-pointer overflow-hidden border ${hasOffer ? 'border-amber-400 offer-card-glow' : 'border-slate-200'} flex flex-col justify-between group relative">
                         
-                        <!-- Header Banner -->
-                        <div class="h-28 bg-slate-800 relative bg-cover bg-center cursor-pointer" style="background-image: url('${storePhoto}')" onclick="openStore('${store.id}')">
+                        <div class="h-28 bg-slate-800 relative bg-cover bg-center" style="background-image: url('${storePhoto}')">
                             <div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-transparent"></div>
                             
-                            <!-- Category Badge -->
                             <span class="absolute top-3 right-3 bg-slate-900/80 backdrop-blur-md text-amber-400 text-[10px] font-black uppercase px-2.5 py-1 rounded-full border border-amber-400/30 shadow">
                                 ${category}
                             </span>
 
-                            <!-- SHARE BUTTON ON BANNER -->
-                            <button onclick="event.stopPropagation(); shareStore('${store.id}', '${encodeURIComponent(storeName)}')" class="absolute top-3 left-3 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white w-8 h-8 rounded-full flex items-center justify-center border border-white/30 shadow transition active:scale-95" title="दुकान शेयर करें">
-                                <i class="fas fa-share-alt text-xs"></i>
-                            </button>
-
-                            <!-- 🔥 UNIQUE OFFER BADGE -->
                             ${hasOffer ? `
-                                <div class="absolute bottom-2 left-3 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-lg flex items-center gap-1 animate-pulse border border-yellow-300">
+                                <div class="absolute top-3 left-3 bg-gradient-to-r from-red-600 to-orange-500 text-white text-[11px] font-black px-3 py-1 rounded-full shadow-lg flex items-center gap-1.5 animate-pulse border border-yellow-300">
                                     <i class="fas fa-gift text-yellow-300"></i>
                                     <span>ऑफ़र चालू है!</span>
                                 </div>
                             ` : ''}
                         </div>
 
-                        <!-- Card Content -->
-                        <div class="p-4 relative pt-0 flex-1 flex flex-col justify-between cursor-pointer" onclick="openStore('${store.id}')">
+                        <div class="p-4 relative pt-0 flex-1 flex flex-col justify-between">
                             
-                            <!-- Profile Image & Status -->
                             <div class="-mt-10 mb-2 flex justify-between items-end">
                                 <img src="${vendorPhoto}" class="w-16 h-16 rounded-full object-cover border-4 border-white shadow-md bg-white">
                                 <span class="text-[11px] font-bold text-emerald-600 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
@@ -307,7 +308,6 @@
                                 </span>
                             </div>
 
-                            <!-- Store Name & Premium Verification -->
                             <div>
                                 <div class="flex items-center gap-1.5">
                                     <h3 class="text-base font-black text-gray-800 group-hover:text-amber-600 transition">${storeName}</h3>
@@ -320,7 +320,6 @@
                                 </p>
                             </div>
 
-                            <!-- 🎁 ACTIVE OFFER DISPLAY BOX -->
                             ${hasOffer ? `
                                 <div class="mt-2 p-2.5 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-300/50 rounded-xl flex items-center gap-2.5">
                                     <div class="bg-gradient-to-tr from-amber-500 to-orange-500 text-white w-8 h-8 rounded-lg flex items-center justify-center shrink-0 shadow-sm">
@@ -333,7 +332,6 @@
                                 </div>
                             ` : ''}
 
-                            <!-- Action Button Footer -->
                             <div class="mt-4 pt-3 border-t border-slate-100 flex justify-between items-center">
                                 <span class="text-xs font-bold text-gray-600">सामान ऑर्डर करें</span>
                                 <span class="bg-amber-100 text-amber-800 group-hover:bg-amber-500 group-hover:text-white transition px-3 py-1.5 rounded-xl text-xs font-bold flex items-center gap-1 shadow-sm">
@@ -349,26 +347,8 @@
             grid.innerHTML = html;
         }
 
-        // दुकान के स्टोर पेज (store.html) पर रिडायरेक्ट करें
         window.openStore = (vendorId) => {
             window.location.href = `store.html?id=${vendorId}`;
-        };
-
-        // शेयर करने का फंक्शन
-        window.shareStore = (vendorId, storeName) => {
-            const decodedName = decodeURIComponent(storeName);
-            const shareUrl = `${window.location.origin}/store.html?id=${vendorId}`;
-            
-            if (navigator.share) {
-                navigator.share({
-                    title: decodedName,
-                    text: `${decodedName} से TrustKart पर ऑनलाइन सामान ऑर्डर करें:`,
-                    url: shareUrl,
-                }).catch((error) => console.log('Sharing failed', error));
-            } else {
-                navigator.clipboard.writeText(shareUrl);
-                alert(`दुकान का लिंक कॉपी हो गया है!\n${shareUrl}`);
-            }
         };
 
         // Offline / Online Game & Connection Logic
